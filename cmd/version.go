@@ -1,20 +1,24 @@
 package cmd
 
 import (
-  "fmt"
+	"fmt"
 
-  "github.com/spf13/cobra"
+	"github.com/spf13/cobra"
 )
 
+// Current version and track of kubeprov.
+const version = "v0.0.1"
+const track = "DEV"
+
 func init() {
-  rootCmd.AddCommand(versionCmd)
+	rootCmd.AddCommand(versionCmd)
 }
 
 var versionCmd = &cobra.Command{
-  Use:   "version",
-  Short: "Print the version number of Hugo",
-  Long:  `All software has versions. This is Hugo's`,
-  Run: func(cmd *cobra.Command, args []string) {
-    fmt.Println("Hugo Static Site Generator v0.9 -- HEAD")
-  },
+	Use:     "version",
+	Aliases: []string{"v"},
+	Short:   "prints the current version",
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("kubeprov " + version + "-" + track)
+	},
 }
