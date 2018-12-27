@@ -14,7 +14,7 @@ THIS IS WORK IN PROGRESS AND NOT FUNCTIONAL YET
 
 ```
 $ go get -u github.com/styxlab/kubeprov
-$ sudo cp  "$GOPATH/bin/kubeprov" /usr/local/bin/
+$ sudo cp "$GOPATH/bin/kubeprov" /usr/local/bin/
 ```
 
 
