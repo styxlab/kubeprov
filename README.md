@@ -3,7 +3,7 @@ Kubernetes Cluster Provisioning on Hetzner Cloud
 
 ## Disclaimer 
 
-THIS IS WORK IN PROGRESS AND NOT FUNCTIONAL YET
+THIS IS WORK IN PROGRESS AND CURRENTLY NOT FUNCTIONAL
 
 ## Prerequisites
 
@@ -11,9 +11,15 @@ THIS IS WORK IN PROGRESS AND NOT FUNCTIONAL YET
 - `go env |grep GOPATH` is set
 - `echo 'export HCLOUD_TOKEN=<HetznerCloudToken>\n' >> ~/.bashrc`
 
-## Usage
+## Install
 
 ```
 $ go get -u github.com/styxlab/kubeprov
 $ sudo cp "$GOPATH/bin/kubeprov" /usr/local/bin/
+```
+
+## Usage
+
+```
+$ kubeprov
 ```
