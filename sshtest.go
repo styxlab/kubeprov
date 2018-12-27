@@ -5,7 +5,7 @@ package main
 import (
 	
 	"fmt"
-	"kubeprov/pkg/ssh"
+	"github.com/styxlab/kubeprov/pkg/ssh"
 )
 
 func main() {
