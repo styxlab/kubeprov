@@ -1,0 +1,20 @@
+{
+  "ignition": {
+    "version": "2.0.0",
+    "config": {}
+  },
+  "storage": {
+  },
+  "systemd": {},
+  "networkd": {},
+  "passwd": {
+    "users": [
+      {
+        "name": "core",
+        "sshAuthorizedKeys": [
+          "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEf2CPQ+5HW+m+NE6Nqlls9uwlrz9eHhKZpYDAW5atY+ cws@home"
+        ]
+      }
+    ]
+  }
+}
