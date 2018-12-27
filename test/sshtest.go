@@ -9,7 +9,7 @@ import (
 
 func main() {
 
-	ipAddress := "116.203.46.235"
+	ipAddress := "116.203.24.10"
 
 	auth := ssh.AuthKey("cws@home", "/home/cws/.ssh/id_ed25519")
 	config := auth.Config("root")
