@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+	"github.com/stxylab/kubeprov/hetzner"
 )
 
 func init() {
@@ -17,5 +18,16 @@ var createCmd = &cobra.Command{
 }
 
 func CreateCluster(cmd *cobra.Command, args []string) {
-	fmt.Println("Implement cluster creation here")
+	
+	hc := hetzner.Connect()
+
+	serverSpec := hc.ServerSpec("cws@home", "demo", "cx11", "centos-7")
+
+	serverInst := serverSpec.Create().EnableRescue().WaitForRunning()
+
+    fmt.Printf("Created node '%s' with IP %s\n", serverInst.Name(), serverInst.IPv4())
+    
+    serverInst.Reboot().WaitForRunning().WaitForRescueDisabled()
+
+    fmt.Printf("Server ready: ssh root@",serverInst.IPv4(),"\n")
 }

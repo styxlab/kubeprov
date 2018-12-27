@@ -25,8 +25,7 @@ func Execute() {
 }
 
 func init() {
-	cobra.OnInitialize(initConfig)
-
+	//cobra.OnInitialize(initConfig)
 	rootCmd.PersistentFlags().BoolP("verbose", "v", false, "log level")
 }
 
