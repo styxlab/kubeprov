@@ -2,6 +2,7 @@
 Kubernetes Cluster Provisioning on Hetzner Cloud
 
 ## Disclaimer 
+
 THIS IS WORK IN PROGRESS AND NOT FUNCTIONAL YET
 
 ## Prerequisites
@@ -16,7 +17,3 @@ THIS IS WORK IN PROGRESS AND NOT FUNCTIONAL YET
 $ go get -u github.com/styxlab/kubeprov
 $ sudo cp "$GOPATH/bin/kubeprov" /usr/local/bin/
 ```
-
-
-
-

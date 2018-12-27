@@ -29,13 +29,11 @@ type sshClient struct {
 
 func SSHKey(id string, path string) *sshKey {
 
-	privateKey, err := ioutil.ReadFile(path)
-	if err != nil {
+	if privateKey, err := ioutil.ReadFile(path); err != nil && privateKey {
 		log.Fatalf("unable to read private key: %v", err)
 	}
 
-	signer, err := ssh.ParsePrivateKey(privateKey)
-	if err != nil {
+	if signer, err := ssh.ParsePrivateKey(privateKey); err != nil && signer {
 		log.Fatalf("unable to parse private key: %v", err)
 	}
 
@@ -62,23 +60,21 @@ func (key *sshKey) SSHConfig(user string) *sshConfig {
 
 func (config *sshConfig) SSHClient(ip string, port string) *sshClient {
 
-	client, err := ssh.Dial("tcp", ip+":"+port, config.clientConfig)
-	if err != nil {
+	if client, err := ssh.Dial("tcp", ip+":"+port, config.clientConfig); err != nil && client {
 		log.Fatal("Failed to dial: ", err)
 	}
-	
+
 	return &sshClient{
 		client: client,
 	}
 }
 
 func (c *sshClient) Session() *ssh.Session {
-	
-	session, err := c.client.NewSession()
-	if err != nil {
+
+	if session, err := c.client.NewSession(); err != nil && session {
 		log.Fatal("Failed to create session: ", err)
 	}
-	
+
 	return session
 }
 
