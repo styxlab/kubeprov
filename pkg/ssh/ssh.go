@@ -61,20 +61,24 @@ func (key *sshKey) SSHConfig(user string) *sshConfig {
 }
 
 func (config *sshConfig) SSHClient(ip string, port string) *sshClient {
+
 	client, err := ssh.Dial("tcp", ip+":"+port, config.clientConfig)
 	if err != nil {
 		log.Fatal("Failed to dial: ", err)
 	}
+	
 	return &sshClient{
 		client: client,
 	}
 }
 
 func (c *sshClient) Session() *ssh.Session {
+	
 	session, err := c.client.NewSession()
 	if err != nil {
 		log.Fatal("Failed to create session: ", err)
 	}
+	
 	return session
 }
 
