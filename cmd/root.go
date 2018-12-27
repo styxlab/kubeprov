@@ -13,7 +13,7 @@ var cfgFile string
 
 var rootCmd = &cobra.Command{
 	Use:   "kubeprov",
-	Short: "CLI for provisioning a Kubernetes Cluster on Hetzner Cloud",
+	Short: "CLI for provisioning a Kubernetes Cluster on Hetzner Cloud.",
 	Long:  "Command-line interface for creating a Kubernetes Clusters on Hetzner Cloud.",
 }
 
@@ -32,6 +32,14 @@ func Execute() {
 	}
 }
 
+func init() {
+	cobra.OnInitialize(initConfig)
+
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file to use")
+	rootCmd.PersistentFlags().BoolP("debug", "d", false, "debug mode")
+}
+
+/*
 func init() {
   cobra.OnInitialize(initConfig)
   rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.cobra.yaml)")
@@ -68,4 +76,50 @@ func initConfig() {
     fmt.Println("Can't read config:", err)
     os.Exit(1)
   }
+}*/
+
+
+// initConfig reads in config file and ENV variables if set.
+func initConfig() {
+	if cfgFile != "" {
+		// Use config file from the flag.
+		viper.SetConfigFile(cfgFile)
+	} else {
+		setConfigDirectory()
+	}
+
+	// read in environment variables that match
+	viper.AutomaticEnv()
+
+	// If a config file is found, read it in.
+	if err := viper.ReadInConfig(); err == nil {
+		fmt.Println("Using config file:", viper.ConfigFileUsed())
+	}
+}
+
+func setConfigDirectory() {
+	// Find config dir based on XDG Base Directory Specification
+	// https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html
+	xdgConfig := os.Getenv("XDG_CONFIG_HOME")
+	if xdgConfig != "" {
+		viper.AddConfigPath(xdgConfig)
+	}
+
+	// Failback to home directory
+	home, err := homedir.Dir()
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	if err == nil {
+		viper.AddConfigPath(home)
+	}
+
+	if xdgConfig == "" && err != nil {
+		fmt.Println("Unable to detect any config location, please specify it with --config flag")
+		os.Exit(1)
+	}
+
+	// Search config directory with name ".hetzner-kube" (without extension).
+	viper.SetConfigName(".hetzner-kube")
 }
