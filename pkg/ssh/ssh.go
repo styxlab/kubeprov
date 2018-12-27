@@ -13,23 +13,27 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
-type sshKey struct {
+//Key hold the key data for secure authentication
+type Key struct {
 	name           string
 	privateKeyPath string
 	signer         ssh.Signer
 }
 
-type sshConfig struct {
+//Config holds the config data of the ssh client
+type Config struct {
 	clientConfig *ssh.ClientConfig
 }
 
-type sshClient struct {
+//Client holds the connection handle
+type Client struct {
 	client *ssh.Client
 }
 
-func SSHKey(id string, path string) *sshKey {
+//AuthKey reads a private SSH key and creates a signiture
+func AuthKey(id string, filePath string) *Key {
 
-	privateKey, err := ioutil.ReadFile(path)
+	privateKey, err := ioutil.ReadFile(filePath)
 	if err != nil {
 		log.Fatalf("unable to read private key: %v", err)
 	}
@@ -39,14 +43,15 @@ func SSHKey(id string, path string) *sshKey {
 		log.Fatalf("unable to parse private key: %v", err)
 	}
 
-	return &sshKey{
+	return &Key{
 		name:           id,
-		privateKeyPath: path,
+		privateKeyPath: filePath,
 		signer:         signer,
 	}
 }
 
-func (key *sshKey) SSHConfig(user string) *sshConfig {
+//Config holds the ssh connection configuration
+func (key *Key) Config(user string) *Config {
 
 	config := &ssh.ClientConfig{
 		User:            user,
@@ -55,24 +60,25 @@ func (key *sshKey) SSHConfig(user string) *sshConfig {
 		Timeout:         10 * time.Second,
 	}
 
-	return &sshConfig{
+	return &Config{
 		clientConfig: config,
 	}
 }
 
-func (config *sshConfig) SSHClient(ip string, port string) *sshClient {
+//Client establishes a connection
+func (config *Config) Client(ip string, port string) *Client {
 
 	client, err := ssh.Dial("tcp", ip+":"+port, config.clientConfig)
 	if err != nil {
 		log.Fatal("Failed to dial: ", err)
 	}
 
-	return &sshClient{
+	return &Client{
 		client: client,
 	}
 }
 
-func (c *sshClient) Session() *ssh.Session {
+func (c *Client) session() *ssh.Session {
 
 	session, err := c.client.NewSession()
 	if err != nil {
@@ -82,13 +88,15 @@ func (c *sshClient) Session() *ssh.Session {
 	return session
 }
 
-func (c *sshClient) Close() {
+//Close the connection
+func (c *Client) Close() {
 	c.client.Close()
 }
 
-func (client *sshClient) RunCmd(cmd string) string {
+//RunCmd executes a shell command
+func (c *Client) RunCmd(cmd string) string {
 
-	session := client.Session()
+	session := c.session()
 	defer session.Close()
 
 	var b bytes.Buffer
@@ -100,7 +108,8 @@ func (client *sshClient) RunCmd(cmd string) string {
 	return b.String()
 }
 
-func (client *sshClient) UploadFile(srcFile string, destPath string, executable bool) error {
+//UploadFile copies a file from a local to a remote machine
+func (c *Client) UploadFile(srcFile string, destPath string, executable bool) error {
 
 	permission := "C0644"
 	if executable {
@@ -110,12 +119,12 @@ func (client *sshClient) UploadFile(srcFile string, destPath string, executable 
 	fileReader, _ := os.Open(srcFile)
 	defer fileReader.Close()
 
-	contents_bytes, _ := ioutil.ReadAll(fileReader)
-	size := int64(len(contents_bytes))
+	contentsBytes, _ := ioutil.ReadAll(fileReader)
+	size := int64(len(contentsBytes))
 
-	r := bytes.NewReader(contents_bytes)
+	r := bytes.NewReader(contentsBytes)
 
-	session := client.Session()
+	session := c.session()
 	defer session.Close()
 
 	var b bytes.Buffer

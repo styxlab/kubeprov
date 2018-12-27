@@ -11,9 +11,9 @@ func main() {
 
 	ipAddress := "116.203.46.235"
 
-	auth := ssh.SSHKey("cws@home", "/home/cws/.ssh/id_ed25519")
-	config := auth.SSHConfig("root")
-	client := config.SSHClient(ipAddress, "22")
+	auth := ssh.AuthKey("cws@home", "/home/cws/.ssh/id_ed25519")
+	config := auth.Config("root")
+	client := config.Client(ipAddress, "22")
 	defer client.Close()
 
 	output := client.RunCmd("uname -a; ls -l")
