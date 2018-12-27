@@ -9,6 +9,8 @@ import (
 	"github.com/spf13/viper"
 )
 
+var cfgFile string
+
 var rootCmd = &cobra.Command{
 	Use:   "kubeprov",
 	Short: "CLI for provisioning a Kubernetes Cluster on Hetzner Cloud",
