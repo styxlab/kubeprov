@@ -29,7 +29,7 @@ func ExecCmd(user string, port string, ipAddress string, cmd string) error {
 //ExecCmdLocal executes directly via shell command
 func ExecCmdLocal(cmd string, args ...string) error {
 
-	sshCommand := exec.Command(cmd, args)
+	sshCommand := exec.Command(cmd, args...)
 	sshCommand.Stdin = os.Stdin
 	sshCommand.Stdout = os.Stdout
 	sshCommand.Stderr = os.Stderr
