@@ -13,9 +13,6 @@ import (
     "github.com/gosuri/uiprogress"
 )
 
-const flagFalse = false
-const flagTrue = true
-
 // CloudClient holds the connection data for the Hetzner Cloud interaction
 type CloudClient struct {
 	client *hcloud.Client
@@ -48,6 +45,7 @@ func (c *CloudClient) ServerSpec(keyid string, name string, stype string, image 
 		c.getSSHKey(keyid)
 	}
 
+	flagFalse := false
     serverOpts := hcloud.ServerCreateOpts{
         Name: name,
         ServerType: &hcloud.ServerType{
@@ -230,7 +228,7 @@ func (s *ServerInstance) PowerOn() *ServerInstance {
 
 	action, _, err := c.client.Server.Poweron(context.Background(), server)
 	if err != nil {
-		return err
+		log.Fatal(err)
 	}
 
 	if err := c.waitForAction(action); err != nil {
