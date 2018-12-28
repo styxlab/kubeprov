@@ -13,6 +13,9 @@ import (
     "github.com/gosuri/uiprogress"
 )
 
+const flagFalse = false
+const flagTrue = true
+
 // CloudClient holds the connection data for the Hetzner Cloud interaction
 type CloudClient struct {
 	client *hcloud.Client
@@ -53,6 +56,7 @@ func (c *CloudClient) ServerSpec(keyid string, name string, stype string, image 
         Image: &hcloud.Image{
             Name: image,
         },
+        StartAfterCreate: &flagFalse,
     }
     serverOpts.SSHKeys = append(serverOpts.SSHKeys, c.sshKey)
 
@@ -216,6 +220,26 @@ func (s *ServerInstance) WaitForRescueDisabled() *ServerInstance {
 	}
 
  	return s
+}
+
+// PowerOn starts the cloud server
+func (s *ServerInstance) PowerOn() *ServerInstance {
+
+	c := s.spec.cc
+	server := s.server
+
+	action, _, err := c.client.Server.Poweron(context.Background(), server)
+	if err != nil {
+		return err
+	}
+
+	if err := c.waitForAction(action); err != nil {
+		log.Fatal("could not power on the server")
+    }
+
+    fmt.Printf("Server %d started\n", server.ID)
+
+	return s
 }
 
 // Name of server instance for convenience

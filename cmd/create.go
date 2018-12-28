@@ -2,9 +2,11 @@ package cmd
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/styxlab/kubeprov/pkg/hetzner"
+	"github.com/styxlab/kubeprov/pkg/ssh"
 )
 
 func init() {
@@ -23,11 +25,9 @@ func CreateCluster(cmd *cobra.Command, args []string) {
 
 	serverSpec := hc.ServerSpec("cws@home", "demo", "cx11", "centos-7")
 
-	serverInst := serverSpec.Create().WaitForRunning().EnableRescue()
+	serverInst := serverSpec.Create().EnableRescue().PowerOn().WaitForRunning()
 
     fmt.Printf("Created node '%s' with IP %s\n", serverInst.Name(), serverInst.IPv4())
-    
-    serverInst.Reboot().WaitForRunning().WaitForRescueDisabled()
+    fmt.Printf("Server should be in rescue mode now: ssh root@%s\n", serverInst.IPv4())
 
-    fmt.Printf("Server ready: ssh root@%s\n", serverInst.IPv4())
 }
