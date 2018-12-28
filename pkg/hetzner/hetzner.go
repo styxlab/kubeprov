@@ -139,7 +139,7 @@ func (s *ServerInstance) EnableRescue() *ServerInstance {
 		log.Fatal("could not enable rescue")
     }
 
-    s.server.EnableRescue = true
+    s.server.RescueEnabled = true
     return s
 }
 
