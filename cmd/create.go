@@ -37,7 +37,7 @@ func CreateCluster(cmd *cobra.Command, args []string) {
 		 fmt.Printf("Error executing remote command: %s\n", err)
 	}
 
-	/*auth := ssh.AuthKey("cws@home", "/home/cws/.ssh/id_ed25519")
+	auth := ssh.AuthKey("cws@home", "/home/cws/.ssh/id_ed25519")
 	config := auth.Config("root")
 	client := config.Client(serverInst.IPv4(), "22")
 	defer client.Close()
@@ -45,7 +45,7 @@ func CreateCluster(cmd *cobra.Command, args []string) {
 	output := client.RunCmd("uname -a")
 	fmt.Println(output)
 
-	dir := "/home/cws/go/src/kubeprov/assets/coreos/"
+	/*dir := "/home/cws/go/src/kubeprov/assets/coreos/"
 	client.UploadFile(dir+"ignition.json", "/root", false)
 	client.UploadFile(dir+"install.sh", "/root", true)
 
