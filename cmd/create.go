@@ -27,7 +27,7 @@ func CreateCluster(cmd *cobra.Command, args []string) {
 
 	serverInst := serverSpec.Create() //.EnableRescue().PowerOn().WaitForRunning()
 
-	ssh.ExecCmdLocal("hcloud", "server", "enable-rescue", "demo", "--ssh-key", "'cws@home'")
+	ssh.ExecCmdLocal("hcloud", "server", "enable-rescue", "demo", "--ssh-key", "cws@home")
 	ssh.ExecCmdLocal("hcloud", "server", "poweron", "demo")
 
 	ipAddress := serverInst.IPv4()
