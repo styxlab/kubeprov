@@ -162,8 +162,8 @@ func (s *ServerInstance) WaitForRunning() *ServerInstance {
     	server.Status = result.Status
     	time.Sleep(2 * time.Second)
 	} 
-	
-	server = result
+
+	s.server = result
  	return s
 }
 
