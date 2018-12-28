@@ -21,9 +21,9 @@ var createCmd = &cobra.Command{
 
 func CreateCluster(cmd *cobra.Command, args []string) {
 	
-	hc := hetzner.Connect()
+	//hc := hetzner.Connect()
 
-	serverSpec := hc.ServerSpec("cws@home", "demo", "cx11", "centos-7")
+	//serverSpec := hc.ServerSpec("cws@home", "demo", "cx11", "centos-7")
 
 	//serverInst := serverSpec.Create() //.EnableRescue().PowerOn().WaitForRunning()
 	ssh.ExecCmdLocal("hcloud", "server", "create", "--image", "centos-7", "--name", "demo", "--type", "cx11", "--ssh-key", "/home/cws/.ssh/id_ed25519.pub")
