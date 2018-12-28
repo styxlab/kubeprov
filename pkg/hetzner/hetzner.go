@@ -127,18 +127,16 @@ func (s *ServerSpec) Create() *ServerInstance {
 func (s *ServerSpec) Status() *ServerInstance {
 
 	client := s.cc.client
-	server := s.server
 
-	result, _, err := client.Server.GetByName(context.Background(), server.Name)
+	result, _, err := client.Server.GetByName(context.Background(), s.options.Name)
     if err != nil {
       	log.Fatal(err)
     }
     if result == nil {
     	log.Fatal("empty server result")
     }
-    s.server = result
 
- 	return s
+ 	return result
 }
 
 // EnableRescue activates the rescue mode
