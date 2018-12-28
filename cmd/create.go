@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/styxlab/kubeprov/pkg/hetzner"
@@ -34,16 +35,23 @@ func CreateCluster(cmd *cobra.Command, args []string) {
 	client := config.Client(serverInst.IPv4(), "22")
 	defer client.Close()
 
-	output := client.RunCmd("uname -a; ls -l")
+	time.Sleep(3 * time.Second)
+
+	output := client.RunCmd("uname -a")
 	fmt.Println(output)
 
 	dir := "/home/cws/go/src/kubeprov/assets/coreos/"
 	client.UploadFile(dir+"ignition.json", "/root", false)
 	client.UploadFile(dir+"install.sh", "/root", true)
 
-	output2 := client.RunCmd("ls")
+	serverInst.Reboot()
+
+	config2 := auth.Config("core")
+	client2 := config2.Client(serverInst.IPv4(), "22")
+	defer client2.Close()
+
+	output2 := client2.RunCmd("uname -a")
 	fmt.Println(output2)
 
-	serverInst.Reboot()
 	fmt.Printf("CoreOs should be installed: ssh -oStrictHostKeyChecking=no core@%s\n", serverInst.IPv4())
 }
