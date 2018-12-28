@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
-	"github.com/styxlab/kubeprov/hetzner"
+	"github.com/styxlab/kubeprov/pkg/hetzner"
 )
 
 func init() {
