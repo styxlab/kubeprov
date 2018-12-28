@@ -32,9 +32,12 @@ func CreateCluster(cmd *cobra.Command, args []string) {
 */
 	//time.Sleep(15 * time.Second)
 
+	ipAddress := "116.203.36.158"
+
 	auth := ssh.AuthKey("cws@home", "/home/cws/.ssh/id_ed25519")
 	config := auth.Config("root")
-	client := config.Client(serverInst.IPv4(), "22")
+	//client := config.Client(serverInst.IPv4(), "22")
+	client := config.Client(ipAddress, "22")
 	defer client.Close()
 
 	output := client.RunCmd("uname -a")
@@ -47,7 +50,8 @@ func CreateCluster(cmd *cobra.Command, args []string) {
 	serverInst.Reboot()
 
 	config2 := auth.Config("core")
-	client2 := config2.Client(serverInst.IPv4(), "22")
+	//client2 := config2.Client(serverInst.IPv4(), "22")
+	client2 := config2.Client(ipAddress, "22")
 	defer client2.Close()
 
 	output2 := client2.RunCmd("uname -a")
