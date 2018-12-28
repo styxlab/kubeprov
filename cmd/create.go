@@ -25,13 +25,13 @@ func CreateCluster(cmd *cobra.Command, args []string) {
 
 	serverSpec := hc.ServerSpec("cws@home", "demo", "cx11", "centos-7")
 
-	//serverInst := serverSpec.Create() //.EnableRescue().PowerOn().WaitForRunning()
+	serverInst := serverSpec.Create().EnableRescue().PowerOn().WaitForRunning()
 	/*ssh.ExecCmdLocal("hcloud", "server", "create", "--image", "centos-7", "--name", "demo", "--type", "cx11", "--ssh-key", "/home/cws/.ssh/id_ed25519.pub")
 	ssh.ExecCmdLocal("hcloud", "server", "poweroff", "demo")
 	ssh.ExecCmdLocal("hcloud", "server", "enable-rescue", "demo", "--ssh-key", "cws@home")
 	ssh.ExecCmdLocal("hcloud", "server", "poweron", "demo")*/
 
-	serverInst := serverSpec.Status()
+	//serverInst := serverSpec.Status()
 	ipAddress := serverInst.IPv4()
 
 	//fmt.Printf("NewIP = %s\n", serverInst.IPv4())
@@ -41,7 +41,7 @@ func CreateCluster(cmd *cobra.Command, args []string) {
     //fmt.Printf("Created node '%s' with IP %s\n", serverInst.Name(), ipAddress)
     fmt.Printf("Server should be in rescue mode now: ssh -oStrictHostKeyChecking=no root@%s\n", ipAddress)
 
-	time.Sleep(1 * time.Second)
+	time.Sleep(15 * time.Second)
 
 	command := "uname -a"
 	if err := ssh.ExecCmd("root", "22", ipAddress, command); err != nil {
