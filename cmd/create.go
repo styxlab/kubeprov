@@ -23,10 +23,10 @@ func CreateCluster(cmd *cobra.Command, args []string) {
 	
 	hc := hetzner.Connect()
 
-	serverSpec := hc.ServerSpec("cws@home", "demo", "cx11", "centos-7")
+	serverSpec := hc.ServerSpec("cws@home", "demo2", "cx11", "centos-7")
 	fmt.Printf("Spec = %v\n", serverSpec)
 
-	//serverInst := serverSpec.Create().EnableRescue().PowerOn().WaitForRunning()
+	serverInst := serverSpec.Create().EnableRescue().PowerOn().WaitForRunning()
 
 	ipAddress := "116.203.36.158"
 	//ipAddress := serverInst.IPv4()
