@@ -171,7 +171,15 @@ func (s *ServerInstance) WaitForRunning() *ServerInstance {
 func (s *ServerInstance) Reboot() *ServerInstance {
 
 	c := s.spec.cc
-	server := s.server
+	//server := s.server
+
+	server, _, err := c.client.Server.GetByName(context.Background(), s.server.Name)
+		if err != nil {
+		log.Fatal(err)
+	}
+	if server == nil {
+		log.Fatal("server not found")
+	}
 
 	action, _, err := c.client.Server.Reboot(context.Background(), server)
 	if err != nil {
@@ -182,7 +190,7 @@ func (s *ServerInstance) Reboot() *ServerInstance {
 		log.Fatal("could not reboot server")
     }
 
-    fmt.Printf("reboot completed?\n")
+    fmt.Printf("Server %d rebooted\n", server.ID)
 
  	return s
 }
