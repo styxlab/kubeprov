@@ -32,9 +32,9 @@ func CreateCluster(cmd *cobra.Command, args []string) {
 
 	time.Sleep(1 * time.Second)
 
-	cmd := "uname -a"
-	if err := ssh.ExecCmd("root", "22", serverInst.IPv4(), cmd); err != nil {
-		 fmt.Printf("Error executing remote command %s\n", cmd)
+	command := "uname -a"
+	if err := ssh.ExecCmd("root", "22", serverInst.IPv4(), command); err != nil {
+		 fmt.Printf("Error executing remote command %s\n", command)
 	}
 
 	/*auth := ssh.AuthKey("cws@home", "/home/cws/.ssh/id_ed25519")
