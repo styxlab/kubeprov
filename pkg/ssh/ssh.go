@@ -57,7 +57,7 @@ func (key *Key) Config(user string) *Config {
 		User:            user,
 		Auth:            []ssh.AuthMethod{ssh.PublicKeys(key.signer)},
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
-		Timeout:         10 * time.Second,
+		Timeout:         60 * time.Second,
 	}
 
 	return &Config{
