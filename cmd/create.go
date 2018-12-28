@@ -33,15 +33,16 @@ func CreateCluster(cmd *cobra.Command, args []string) {
 
 	//serverInst := serverSpec.Status()
 	ipAddress := serverInst.IPv4()
+	Test(ipAddress)
 
 	//fmt.Printf("NewIP = %s\n", serverInst.IPv4())
 
 	//ipAddress := "116.203.36.158"
 
     //fmt.Printf("Created node '%s' with IP %s\n", serverInst.Name(), ipAddress)
-    fmt.Printf("Server should be in rescue mode now: ssh -oStrictHostKeyChecking=no root@%s\n", ipAddress)
+    /*fmt.Printf("Server should be in rescue mode now: ssh -oStrictHostKeyChecking=no root@%s\n", ipAddress)
 
-	time.Sleep(15 * time.Second)
+	time.Sleep(1 * time.Second)
 
 	command := "uname -a"
 	if err := ssh.ExecCmd("root", "22", ipAddress, command); err != nil {
@@ -54,7 +55,7 @@ func CreateCluster(cmd *cobra.Command, args []string) {
 	defer client.Close()
 
 	output := client.RunCmd("uname -a")
-	fmt.Println(output)
+	fmt.Println(output)*/
 
 	/*dir := "/home/cws/go/src/kubeprov/assets/coreos/"
 	client.UploadFile(dir+"ignition.json", "/root", false)
@@ -71,4 +72,25 @@ func CreateCluster(cmd *cobra.Command, args []string) {
 
 	fmt.Printf("CoreOs should be installed: ssh -oStrictHostKeyChecking=no core@%s\n", ipAddress)
 	*/
+}
+
+func Test(ipAddress string) {
+
+	fmt.Printf("Server should be in rescue mode now: ssh -oStrictHostKeyChecking=no root@%s\n", ipAddress)
+
+	time.Sleep(1 * time.Second)
+
+	command := "uname -a"
+	if err := ssh.ExecCmd("root", "22", ipAddress, command); err != nil {
+		 fmt.Printf("Error executing remote command: %s\n", err)
+	}
+
+	auth := ssh.AuthKey("cws@home", "/home/cws/.ssh/id_ed25519")
+	config := auth.Config("root")
+	client := config.Client(ipAddress, "22")
+	defer client.Close()
+
+	output := client.RunCmd("uname -a")
+	fmt.Println(output)
+
 }
