@@ -23,15 +23,20 @@ func CreateCluster(cmd *cobra.Command, args []string) {
 	
 	hc := hetzner.Connect()
 
-	serverSpec := hc.ServerSpec("cws@home", "demo2", "cx11", "centos-7")
+	serverSpec := hc.ServerSpec("cws@home", "demo", "cx11", "centos-7")
 
-	serverInst := serverSpec.Create().EnableRescue().PowerOn().WaitForRunning()
+	serverInst := serverSpec.Create() //.EnableRescue().PowerOn().WaitForRunning()
 
-	fmt.Printf("NewIP = %s\n", serverInst.IPv4())
+	ssh.ExecCmdLocal("hcloud server enable-rescue demo --ssh-key 'cws@home'")
+	ssh.ExecCmdLocal("hcloud server poweron demo")
 
-	ipAddress := "116.203.36.158"
+	ipAddress := serverInst.IPv4()
 
-    //fmt.Printf("Created node '%s' with IP %s\n", serverInst.Name(), ipAddress)
+	//fmt.Printf("NewIP = %s\n", serverInst.IPv4())
+
+	//ipAddress := "116.203.36.158"
+
+    fmt.Printf("Created node '%s' with IP %s\n", serverInst.Name(), ipAddress)
     fmt.Printf("Server should be in rescue mode now: ssh -oStrictHostKeyChecking=no root@%s\n", ipAddress)
 
 	time.Sleep(1 * time.Second)

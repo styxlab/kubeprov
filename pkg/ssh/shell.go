@@ -25,3 +25,23 @@ func ExecCmd(user string, port string, ipAddress string, cmd string) error {
 
 	return nil
 }
+
+//ExecCmdLocal executes directly via shell command
+func ExecCmdLocal(cmd string) error {
+
+	sshCommand := exec.Command(cmd)
+	sshCommand.Stdin = os.Stdin
+	sshCommand.Stdout = os.Stdout
+	sshCommand.Stderr = os.Stderr
+
+	if err := sshCommand.Run(); err != nil {
+		if exitError, ok := err.(*exec.ExitError); ok {
+			waitStatus := exitError.Sys().(syscall.WaitStatus)
+			os.Exit(waitStatus.ExitStatus())
+		} else {
+			return err
+		}
+	}
+
+	return nil
+}
