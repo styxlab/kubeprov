@@ -24,12 +24,11 @@ func CreateCluster(cmd *cobra.Command, args []string) {
 	hc := hetzner.Connect()
 
 	serverSpec := hc.ServerSpec("cws@home", "demo2", "cx11", "centos-7")
-	fmt.Printf("Spec = %v\n", serverSpec)
 
 	serverInst := serverSpec.Create().EnableRescue().PowerOn().WaitForRunning()
 
 	ipAddress := "116.203.36.158"
-	//ipAddress := serverInst.IPv4()
+	ipAddress2 := serverInst.IPv4()
 
     //fmt.Printf("Created node '%s' with IP %s\n", serverInst.Name(), ipAddress)
     fmt.Printf("Server should be in rescue mode now: ssh -oStrictHostKeyChecking=no root@%s\n", ipAddress)
