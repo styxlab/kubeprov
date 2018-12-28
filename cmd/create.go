@@ -23,7 +23,7 @@ func CreateCluster(cmd *cobra.Command, args []string) {
 
 	serverSpec := hc.ServerSpec("cws@home", "demo", "cx11", "centos-7")
 
-	serverInst := serverSpec.Create().EnableRescue().WaitForRunning()
+	serverInst := serverSpec.Create().WaitForRunning().EnableRescue()
 
     fmt.Printf("Created node '%s' with IP %s\n", serverInst.Name(), serverInst.IPv4())
     
