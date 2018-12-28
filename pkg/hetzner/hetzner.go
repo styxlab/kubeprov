@@ -136,7 +136,10 @@ func (s *ServerSpec) Status() *ServerInstance {
     	log.Fatal("empty server result")
     }
 
- 	return result
+ 	return &ServerInstance {
+    	spec: s,
+    	server: result.Server,
+    }
 }
 
 // EnableRescue activates the rescue mode
