@@ -24,6 +24,7 @@ func CreateCluster(cmd *cobra.Command, args []string) {
 	hc := hetzner.Connect()
 
 	serverSpec := hc.ServerSpec("cws@home", "demo", "cx11", "centos-7")
+	fmt.Printf("Spec = %v\n", serverSpec)
 
 	//serverInst := serverSpec.Create().EnableRescue().PowerOn().WaitForRunning()
 
