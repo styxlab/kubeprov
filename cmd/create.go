@@ -29,5 +29,5 @@ func CreateCluster(cmd *cobra.Command, args []string) {
     
     serverInst.Reboot().WaitForRunning().WaitForRescueDisabled()
 
-    fmt.Printf("Server ready: ssh root@",serverInst.IPv4(),"\n")
+    fmt.Printf("Server ready: ssh root@%s\n", serverInst.IPv4())
 }
