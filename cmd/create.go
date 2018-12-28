@@ -32,7 +32,7 @@ func CreateCluster(cmd *cobra.Command, args []string) {
 	ssh.ExecCmdLocal("hcloud", "server", "poweron", "demo")
 
 	//serverInst := serverSpec.Status()
-	ipAddress := serverInst.IPv4()
+	//ipAddress := serverInst.IPv4()
 
 	//fmt.Printf("NewIP = %s\n", serverInst.IPv4())
 
