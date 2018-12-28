@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
-	"github.com/styxlab/kubeprov/pkg/hetzner"
+	//"github.com/styxlab/kubeprov/pkg/hetzner"
 	"github.com/styxlab/kubeprov/pkg/ssh"
 )
 
