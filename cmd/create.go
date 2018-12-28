@@ -27,8 +27,9 @@ func CreateCluster(cmd *cobra.Command, args []string) {
 
 	serverInst := serverSpec.Create().EnableRescue().PowerOn().WaitForRunning()
 
+	fmt.Printf("NewIP = %s\n", serverInst.IPv4())
+
 	ipAddress := "116.203.36.158"
-	ipAddress2 := serverInst.IPv4()
 
     //fmt.Printf("Created node '%s' with IP %s\n", serverInst.Name(), ipAddress)
     fmt.Printf("Server should be in rescue mode now: ssh -oStrictHostKeyChecking=no root@%s\n", ipAddress)
