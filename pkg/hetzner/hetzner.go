@@ -138,7 +138,7 @@ func (s *ServerSpec) Status() *ServerInstance {
 
  	return &ServerInstance {
     	spec: s,
-    	server: result.Server,
+    	server: result,
     }
 }
 
