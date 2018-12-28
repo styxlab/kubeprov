@@ -7,9 +7,9 @@ import (
 )
 
 //ExecCmd executes directly via shell command
-func ExecCmd(user string, port string, ipAddress string, args ...string) error {
+func ExecCmd(user string, port string, ipAddress string, command string) error {
 
-	sshCommand := exec.Command("ssh", "-oStrictHostKeyChecking=no", "-l", user, "-p", port, ipAddress, args...)
+	sshCommand := exec.Command("ssh", "-oStrictHostKeyChecking=no", "-l", user, "-p", port, ipAddress, command)
 	sshCommand.Stdin = os.Stdin
 	sshCommand.Stdout = os.Stdout
 	sshCommand.Stderr = os.Stderr
