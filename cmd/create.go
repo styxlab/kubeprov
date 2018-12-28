@@ -25,21 +25,24 @@ func CreateCluster(cmd *cobra.Command, args []string) {
 
 	serverSpec := hc.ServerSpec("cws@home", "demo", "cx11", "centos-7")
 
-	serverInst := serverSpec.Create().EnableRescue().PowerOn().WaitForRunning()
+	//serverInst := serverSpec.Create().EnableRescue().PowerOn().WaitForRunning()
 
-    fmt.Printf("Created node '%s' with IP %s\n", serverInst.Name(), serverInst.IPv4())
-    fmt.Printf("Server should be in rescue mode now: ssh -oStrictHostKeyChecking=no root@%s\n", serverInst.IPv4())
+	ipAddress := "116.203.36.158"
+	//ipAddress := serverInst.IPv4()
+
+    fmt.Printf("Created node '%s' with IP %s\n", serverInst.Name(), ipAddress)
+    fmt.Printf("Server should be in rescue mode now: ssh -oStrictHostKeyChecking=no root@%s\n", ipAddress)
 
 	time.Sleep(1 * time.Second)
 
 	command := "uname -a"
-	if err := ssh.ExecCmd("root", "22", serverInst.IPv4(), command); err != nil {
+	if err := ssh.ExecCmd("root", "22", ipAddress, command); err != nil {
 		 fmt.Printf("Error executing remote command: %s\n", err)
 	}
 
 	auth := ssh.AuthKey("cws@home", "/home/cws/.ssh/id_ed25519")
 	config := auth.Config("root")
-	client := config.Client(serverInst.IPv4(), "22")
+	client := config.Client(ipAddress, "22")
 	defer client.Close()
 
 	output := client.RunCmd("uname -a")
@@ -52,12 +55,12 @@ func CreateCluster(cmd *cobra.Command, args []string) {
 	serverInst.Reboot()
 
 	config2 := auth.Config("core")
-	client2 := config2.Client(serverInst.IPv4(), "22")
+	client2 := config2.Client(ipAddress, "22")
 	defer client2.Close()
 
 	output2 := client2.RunCmd("uname -a")
 	fmt.Println(output2)
 
-	fmt.Printf("CoreOs should be installed: ssh -oStrictHostKeyChecking=no core@%s\n", serverInst.IPv4())
+	fmt.Printf("CoreOs should be installed: ssh -oStrictHostKeyChecking=no core@%s\n", ipAddress)
 	*/
 }
