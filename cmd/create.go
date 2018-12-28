@@ -20,7 +20,7 @@ var createCmd = &cobra.Command{
 }
 
 func CreateCluster(cmd *cobra.Command, args []string) {
-	
+	/*
 	hc := hetzner.Connect()
 
 	serverSpec := hc.ServerSpec("cws@home", "demo", "cx11", "centos-7")
@@ -29,10 +29,10 @@ func CreateCluster(cmd *cobra.Command, args []string) {
 
     fmt.Printf("Created node '%s' with IP %s\n", serverInst.Name(), serverInst.IPv4())
     fmt.Printf("Server should be in rescue mode now: ssh -oStrictHostKeyChecking=no root@%s\n", serverInst.IPv4())
-
+*/
 	//time.Sleep(15 * time.Second)
 
-	/*auth := ssh.AuthKey("cws@home", "/home/cws/.ssh/id_ed25519")
+	auth := ssh.AuthKey("cws@home", "/home/cws/.ssh/id_ed25519")
 	config := auth.Config("root")
 	client := config.Client(serverInst.IPv4(), "22")
 	defer client.Close()
@@ -54,5 +54,5 @@ func CreateCluster(cmd *cobra.Command, args []string) {
 	fmt.Println(output2)
 
 	fmt.Printf("CoreOs should be installed: ssh -oStrictHostKeyChecking=no core@%s\n", serverInst.IPv4())
-	*/
+	
 }
