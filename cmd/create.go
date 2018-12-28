@@ -36,7 +36,7 @@ func CreateCluster(cmd *cobra.Command, args []string) {
 
 	//fmt.Printf("NewIP = %s\n", serverInst.IPv4())
 
-	ipAddress := "159.69.154.30"
+	ipAddress := "116.203.36.158"
 
     //fmt.Printf("Created node '%s' with IP %s\n", serverInst.Name(), ipAddress)
     fmt.Printf("Server should be in rescue mode now: ssh -oStrictHostKeyChecking=no root@%s\n", ipAddress)
