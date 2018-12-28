@@ -32,7 +32,7 @@ func CreateCluster(cmd *cobra.Command, args []string) {
 
 	//time.Sleep(15 * time.Second)
 
-	auth := ssh.AuthKey("cws@home", "/home/cws/.ssh/id_ed25519")
+	/*auth := ssh.AuthKey("cws@home", "/home/cws/.ssh/id_ed25519")
 	config := auth.Config("root")
 	client := config.Client(serverInst.IPv4(), "22")
 	defer client.Close()
@@ -54,4 +54,5 @@ func CreateCluster(cmd *cobra.Command, args []string) {
 	fmt.Println(output2)
 
 	fmt.Printf("CoreOs should be installed: ssh -oStrictHostKeyChecking=no core@%s\n", serverInst.IPv4())
+	*/
 }
