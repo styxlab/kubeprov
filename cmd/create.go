@@ -35,7 +35,7 @@ func CreateCluster(cmd *cobra.Command, args []string) {
 	client := config.Client(serverInst.IPv4(), "22")
 	defer client.Close()
 
-	time.Sleep(3 * time.Second)
+	time.Sleep(10 * time.Second)
 
 	output := client.RunCmd("uname -a")
 	fmt.Println(output)
