@@ -32,7 +32,12 @@ func CreateCluster(cmd *cobra.Command, args []string) {
 
 	time.Sleep(1 * time.Second)
 
-	auth := ssh.AuthKey("cws@home", "/home/cws/.ssh/id_ed25519")
+	cmd := "uname -a"
+	if err := ssh.ExecCmd("root", "22", serverInst.IPv4(), cmd); err != nil {
+		 fmt.Printf("Error executing remote command %s\n", cmd)
+	}
+
+	/*auth := ssh.AuthKey("cws@home", "/home/cws/.ssh/id_ed25519")
 	config := auth.Config("root")
 	client := config.Client(serverInst.IPv4(), "22")
 	defer client.Close()
@@ -54,4 +59,5 @@ func CreateCluster(cmd *cobra.Command, args []string) {
 	fmt.Println(output2)
 
 	fmt.Printf("CoreOs should be installed: ssh -oStrictHostKeyChecking=no core@%s\n", serverInst.IPv4())
+	*/
 }
