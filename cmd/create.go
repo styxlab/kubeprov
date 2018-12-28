@@ -30,7 +30,7 @@ func CreateCluster(cmd *cobra.Command, args []string) {
     fmt.Printf("Created node '%s' with IP %s\n", serverInst.Name(), serverInst.IPv4())
     fmt.Printf("Server should be in rescue mode now: ssh -oStrictHostKeyChecking=no root@%s\n", serverInst.IPv4())
 
-    hc.client.Close()
+    serverSpec.cc.client.Close()
 
 	time.Sleep(15 * time.Second)
 
