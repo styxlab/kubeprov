@@ -139,6 +139,7 @@ func (s *ServerInstance) EnableRescue() *ServerInstance {
 		log.Fatal("could not enable rescue")
     }
 
+    s.server.EnableRescue = true
     return s
 }
 
@@ -162,6 +163,7 @@ func (s *ServerInstance) WaitForRunning() *ServerInstance {
     	time.Sleep(2 * time.Second)
 	} 
 
+	fmt.Printf("Status = '%v'...\n", s.server.Status)
  	return s
 }
 
@@ -170,6 +172,8 @@ func (s *ServerInstance) Reboot() *ServerInstance {
 
 	c := s.spec.cc
 	server := s.server
+
+	fmt.Printf("RescueEnabled = '%v'...\n", server.RescueEnabled)
 
 	fmt.Printf("rebooting server '%s'...", server.Name)
 
@@ -196,7 +200,7 @@ func (s *ServerInstance) WaitForRescueDisabled() *ServerInstance {
 	//TODO: Timeout
 
 	fmt.Printf("WaitForRescueDisabled for server '%s'...\n", server.Name)
-	fmt.Printf("RescueEnabled for server '%s'...\n", server.RescueEnabled)
+	fmt.Printf("RescueEnabled = '%v'...\n", server.RescueEnabled)
 
 	for server.RescueEnabled != false {
 		result, _, err := c.client.Server.GetByName(context.Background(), server.Name)
@@ -207,7 +211,7 @@ func (s *ServerInstance) WaitForRescueDisabled() *ServerInstance {
     		log.Fatal("empty server result")
     	}
     	server.RescueEnabled = result.RescueEnabled
-		fmt.Printf("RescueEnabled for server '%s'...\n", server.RescueEnabled)
+		fmt.Printf("RescueEnabled = '%v'...\n", server.RescueEnabled)
 
     	time.Sleep(2 * time.Second)
 	}
