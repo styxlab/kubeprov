@@ -78,7 +78,7 @@ func Test(ipAddress string) {
 
 	fmt.Printf("Server should be in rescue mode now: ssh -oStrictHostKeyChecking=no root@%s\n", ipAddress)
 
-	time.Sleep(1 * time.Second)
+	time.Sleep(30 * time.Second)
 
 	command := "uname -a"
 	if err := ssh.ExecCmd("root", "22", ipAddress, command); err != nil {
