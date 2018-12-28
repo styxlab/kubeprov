@@ -123,6 +123,24 @@ func (s *ServerSpec) Create() *ServerInstance {
     }
 }
 
+// Status retreives the current status
+func (s *ServerSpec) Status() *ServerInstance {
+
+	client := s.cc.client
+	server := s.server
+
+	result, _, err := client.Server.GetByName(context.Background(), server.Name)
+    if err != nil {
+      	log.Fatal(err)
+    }
+    if result == nil {
+    	log.Fatal("empty server result")
+    }
+    s.server = result
+
+ 	return s
+}
+
 // EnableRescue activates the rescue mode
 func (s *ServerInstance) EnableRescue() *ServerInstance {
 
