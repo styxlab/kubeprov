@@ -159,11 +159,11 @@ func (s *ServerInstance) WaitForRunning() *ServerInstance {
     	if result == nil {
     		log.Fatal("empty server result")
     	}
-    	server.Status = result.Status
+    	//server.Status = result.Status
+    	server = result
     	time.Sleep(2 * time.Second)
 	} 
 
-	s.server = result
  	return s
 }
 
