@@ -29,7 +29,7 @@ func CreateCluster(cmd *cobra.Command, args []string) {
 	fmt.Printf("Created node '%s' with IP %s\n", serverInst.Name(), serverInst.IPv4())
 
 	installCoreOS(serverInst.IPv4())
-	serverInst.Reboot()
+	/*serverInst.Reboot()
 
 	if !ssh.ScanPort(serverInst.IPv4(), 22, 2 * time.Second, 120 * time.Second) {
 		log.Fatal("Portscan failed after timeout.")
@@ -43,7 +43,7 @@ func CreateCluster(cmd *cobra.Command, args []string) {
 	output := client.RunCmd("uname -a")
 	fmt.Println(output)
 
-	fmt.Printf("CoreOs installed: ssh -oStrictHostKeyChecking=no core@%s\n", serverInst.IPv4())
+	fmt.Printf("CoreOs installed: ssh -oStrictHostKeyChecking=no core@%s\n", serverInst.IPv4())*/
 
 	serverInst.CreateImage()
 }

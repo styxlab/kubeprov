@@ -5,6 +5,10 @@ Kubernetes Cluster Provisioning on Hetzner Cloud
 
 THIS IS WORK IN PROGRESS AND CURRENTLY NOT FUNCTIONAL
 
+## Features
+- All server nodes run on CoreOS
+- Security first approach (Firewall, Encryption)
+
 ## Prerequisites
 
 - `go version` >= `go1.11.2`
