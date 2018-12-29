@@ -58,7 +58,7 @@ func installCoreOS(ipAddress string) {
 		 fmt.Printf("Error executing remote command: %s\n", err)
 	}
 	fmt.Printf("Server should be in rescue mode now: ssh -oStrictHostKeyChecking=no root@%s\n", ipAddress)*/
-	ssh.ScanPort(ipAddress, 22, 120 * time.Second)
+	ssh.ScanPort(ipAddress, 22, 2 * time.Second, 120 * time.Second)
 
 	auth := ssh.AuthKey("cws@home", "/home/cws/.ssh/id_ed25519")
 	config := auth.Config("root")
