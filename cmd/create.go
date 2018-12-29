@@ -31,34 +31,12 @@ func CreateCluster(cmd *cobra.Command, args []string) {
 	installCoreOS(serverInst.IPv4())
 
 	//serverInst := serverSpec.Status()
-}
-
-func installCoreOS(ipAddress string) {
-
-	if err := ssh.ExecCmdLocal("./portwait.sh", ipAddress); err != nil {
-		 fmt.Printf("Error executing remote command: %s\n", err)
-	}
-	fmt.Printf("Server should be in rescue mode now: ssh -oStrictHostKeyChecking=no root@%s\n", ipAddress)
-
-	/*command := "uname -a"
-	if err := ssh.ExecCmd("root", "22", ipAddress, command); err != nil {
-		 fmt.Printf("Error executing remote command: %s\n", err)
-	}*/
-
-	auth := ssh.AuthKey("cws@home", "/home/cws/.ssh/id_ed25519")
-	config := auth.Config("root")
-	client := config.Client(ipAddress, "22")
-	defer client.Close()
-
-	output := client.RunCmd("uname -a")
-	fmt.Println(output)
-
-
-	/*dir := "/home/cws/go/src/kubeprov/assets/coreos/"
-	client.UploadFile(dir+"ignition.json", "/root", false)
-	client.UploadFile(dir+"install.sh", "/root", true)
 
 	serverInst.Reboot()
+
+	if err := ssh.ExecCmdLocal("./portwait.sh", serverInst.IPv4()); err != nil {
+		 fmt.Printf("Error executing remote command: %s\n", err)
+	}
 
 	config2 := auth.Config("core")
 	client2 := config2.Client(ipAddress, "22")
@@ -68,6 +46,24 @@ func installCoreOS(ipAddress string) {
 	fmt.Println(output2)
 
 	fmt.Printf("CoreOs should be installed: ssh -oStrictHostKeyChecking=no core@%s\n", ipAddress)
-	*/
+}
 
+func installCoreOS(ipAddress string) {
+
+	if err := ssh.ExecCmdLocal("./portwait.sh", ipAddress); err != nil {
+		 fmt.Printf("Error executing remote command: %s\n", err)
+	}
+	fmt.Printf("Server should be in rescue mode now: ssh -oStrictHostKeyChecking=no root@%s\n", ipAddress)
+
+	auth := ssh.AuthKey("cws@home", "/home/cws/.ssh/id_ed25519")
+	config := auth.Config("root")
+	client := config.Client(ipAddress, "22")
+	defer client.Close()
+
+	output := client.RunCmd("uname -a")
+	fmt.Println(output)
+
+	dir := "/home/cws/go/src/kubeprov/assets/coreos/"
+	client.UploadFile(dir+"ignition.json", "/root", false)
+	client.UploadFile(dir+"install.sh", "/root", true)
 }
