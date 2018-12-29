@@ -28,7 +28,7 @@ type Config struct {
 // Client holds the connection handle
 type Client struct {
 	address string
-	port int64
+	port int
 	client *ssh.Client
 }
 
