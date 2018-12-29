@@ -20,7 +20,7 @@ func ScanPort(ip string, port int, interval time.Duration, timeout time.Duration
     if err != nil {
         fmt.Println(port, "closed")
         time.Sleep(interval)
-        ScanPort(ip, port, timeout - intervall)
+        ScanPort(ip, port, interval, timeout - interval)
         return false
     }
 
