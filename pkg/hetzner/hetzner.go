@@ -268,3 +268,27 @@ func (s *ServerInstance) Name() string {
 func (s *ServerInstance) IPv4() string {
 	return s.server.PublicNet.IPv4.IP.String()
 }
+
+// Create an image
+func (s *ServerInstance) CreateImage() *ServerInstance {
+
+	c := s.spec.cc
+	server := s.server
+
+	opts := &hcloud.ServerCreateImageOpts{
+		Type: "snapshot",
+		Description: "coreos",
+	}
+	result, _, err :=  c.client.Server.CreateImage(context.Background(), server, opts)
+	if err != nil {
+		return err
+	}
+
+	if err := c.waitForAction(result.Action); err != nil {
+		log.Fatal("could not create server image")
+    }
+
+    fmt.Printf("Server image created.\n")
+
+	return s
+}

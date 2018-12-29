@@ -44,6 +44,8 @@ func CreateCluster(cmd *cobra.Command, args []string) {
 	fmt.Println(output)
 
 	fmt.Printf("CoreOs installed: ssh -oStrictHostKeyChecking=no core@%s\n", serverInst.IPv4())
+
+	serverInst.CreateImage()
 }
 
 func installCoreOS(ipAddress string) {
