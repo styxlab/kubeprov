@@ -10,6 +10,7 @@ import (
 func ScanPort(ip string, port int, interval time.Duration, timeout time.Duration) bool {
 
     if timeout < interval {
+        fmt.Println(port, "closed")
         return false
     }
 
@@ -18,7 +19,6 @@ func ScanPort(ip string, port int, interval time.Duration, timeout time.Duration
     conn, err := net.DialTimeout("tcp", target, interval)
     
     if err != nil {
-        fmt.Println(port, "closed")
         time.Sleep(interval)
         ScanPort(ip, port, interval, timeout - interval)
         return false
