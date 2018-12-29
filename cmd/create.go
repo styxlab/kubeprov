@@ -34,11 +34,6 @@ func CreateCluster(cmd *cobra.Command, args []string) {
 	//serverInst := serverSpec.Status()
 
 	serverInst.Reboot()
-
-	/*if err := ssh.ExecCmdLocal("./portwait.sh", serverInst.IPv4()); err != nil {
-		 fmt.Printf("Error executing remote command: %s\n", err)
-	}*/
-
 	ssh.ScanPort(serverInst.IPv4(), 22, 2 * time.Second, 120 * time.Second)
 
 	auth := ssh.AuthKey("cws@home", "/home/cws/.ssh/id_ed25519")
@@ -71,4 +66,7 @@ func installCoreOS(ipAddress string) {
 	dir := "/home/cws/go/src/kubeprov/assets/coreos/"
 	client.UploadFile(dir+"ignition.json", "/root", false)
 	client.UploadFile(dir+"install.sh", "/root", true)
+
+	output2 := client.RunCmd("./install.sh")
+	fmt.Println(output2)
 }
