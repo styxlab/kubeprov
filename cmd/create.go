@@ -34,7 +34,10 @@ func CreateCluster(cmd *cobra.Command, args []string) {
 	//serverInst := serverSpec.Status()
 
 	serverInst.Reboot()
-	ssh.ScanPort(serverInst.IPv4(), 22, 2 * time.Second, 120 * time.Second)
+	if !ssh.ScanPort(serverInst.IPv4(), 22, 2 * time.Second, 120 * time.Second) {
+		log.Fatal("Portscan failed after timeout.")
+	}
+
 
 	auth := ssh.AuthKey("cws@home", "/home/cws/.ssh/id_ed25519")
 	config := auth.Config("core")
@@ -49,11 +52,10 @@ func CreateCluster(cmd *cobra.Command, args []string) {
 
 func installCoreOS(ipAddress string) {
 
-	/*if err := ssh.ExecCmdLocal("./portwait.sh", ipAddress); err != nil {
-		 fmt.Printf("Error executing remote command: %s\n", err)
+	//wait for open port
+	if !ssh.ScanPort(ipAddress, 22, 2 * time.Second, 120 * time.Second){
+		log.Fatal("Portscan failed after timeout.")
 	}
-	fmt.Printf("Server should be in rescue mode now: ssh -oStrictHostKeyChecking=no root@%s\n", ipAddress)*/
-	ssh.ScanPort(ipAddress, 22, 2 * time.Second, 120 * time.Second)
 
 	auth := ssh.AuthKey("cws@home", "/home/cws/.ssh/id_ed25519")
 	config := auth.Config("root")
