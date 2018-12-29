@@ -275,7 +275,7 @@ func (s *ServerInstance) ServerDelete() {
 	c := s.spec.cc
 	server := s.server
 
-	action, _, err := c.client.Server.delete(context.Background(), server)
+	action, _, err := c.client.Server.Delete(context.Background(), server)
 	if err != nil {
 		log.Fatal(err)
 	}
