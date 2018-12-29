@@ -39,7 +39,7 @@ func CreateCluster(cmd *cobra.Command, args []string) {
 		 fmt.Printf("Error executing remote command: %s\n", err)
 	}*/
 
-	ssh.ScanPort(ipAddress, 22, 120 * time.Second)
+	ssh.ScanPort(serverInst.IPv4(), 22, 120 * time.Second)
 
 	auth := ssh.AuthKey("cws@home", "/home/cws/.ssh/id_ed25519")
 	config := auth.Config("core")
