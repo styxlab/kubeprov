@@ -2,8 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"time"
-	"log"
 
 	"github.com/spf13/cobra"
 	"github.com/styxlab/kubeprov/pkg/hetzner"
@@ -21,19 +19,60 @@ var createCmd = &cobra.Command{
 }
 
 func CreateCluster(cmd *cobra.Command, args []string) {
-	
+
+	imageSpec := createImageForCoreOS()
+
+	//create new CoreOS servers
+	createServer("core01", imageSpec)
+	createServer("core02", imageSpec)
+}
+
+func createImageForCoreOS() *imageSpec {
+
 	hc := hetzner.Connect()
-	serverSpec := hc.ServerSpec("cws@home", "demo", "cx11", "centos-7")
+	imageSpec := hetzner.ImageByName("centos-7")
+	serverSpec := hc.ServerSpec("cws@home", "coreOS-install", "cx11", imageSpec)
 	serverInst := serverSpec.Create().EnableRescue().PowerOn().WaitForRunning()
 	//serverInst := serverSpec.Status()
-	fmt.Printf("Created node '%s' with IP %s\n", serverInst.Name(), serverInst.IPv4())
 
 	installCoreOS(serverInst.IPv4())
-	/*serverInst.Reboot()
+	
+	// Create the image before reboot in order to preserver ignition.json
+	imageSpec = serverInst.CreateSnapshot("CoreOS")
 
-	if !ssh.ScanPort(serverInst.IPv4(), 22, 2 * time.Second, 120 * time.Second) {
-		log.Fatal("Portscan failed after timeout.")
-	}
+	// Delete server 
+	serverInst.ServerDelete()
+
+	return imageSpec
+}
+
+func installCoreOS(ipAddress string) {
+
+	auth := ssh.AuthKey("cws@home", "/home/cws/.ssh/id_ed25519")
+	config := auth.Config("root")
+	client := config.Client(ipAddress, 22)
+	defer client.Close()
+
+	output := client.WaitForOpenPort().RunCmd("uname -a")
+	fmt.Println(output)
+
+	dir := "/home/cws/go/src/kubeprov/assets/coreos/"
+	client.UploadFile(dir+"ignition.json", "/root", false)
+	client.UploadFile(dir+"install.sh", "/root", true)
+
+	output = client.RunCmd("./install.sh")
+	fmt.Println(output)
+}
+
+func createServer(name string, image *imageSpec){
+
+	hc := hetzner.Connect()
+	serverSpec := hc.ServerSpec("cws@home", name, "cx11", image)
+	serverInst := serverSpec.Create().PowerOn().WaitForRunning()
+}
+
+
+	/* serverInst.Reboot()
 
 	auth := ssh.AuthKey("cws@home", "/home/cws/.ssh/id_ed25519")
 	config := auth.Config("core")
@@ -43,30 +82,13 @@ func CreateCluster(cmd *cobra.Command, args []string) {
 	output := client.RunCmd("uname -a")
 	fmt.Println(output)
 
-	fmt.Printf("CoreOs installed: ssh -oStrictHostKeyChecking=no core@%s\n", serverInst.IPv4())*/
+	fmt.Printf("CoreOs installed: ssh -oStrictHostKeyChecking=no core@%s\n", serverInst.IPv4())
 
-	serverInst.CreateImage()
-}
+	//now you can install a new server based on the new coreos image
+	imageID: = imageInst.id
+	serverSpec2 := hc.ServerSpec("cws@home", "core02", "cx11", imageID)
+	serverInst2 := serverSpec2.Create().PowerOn().WaitForRunning()
 
-func installCoreOS(ipAddress string) {
-
-	//wait for open port
-	if !ssh.ScanPort(ipAddress, 22, 2 * time.Second, 120 * time.Second){
-		log.Fatal("Portscan failed after timeout.")
-	}
-
-	auth := ssh.AuthKey("cws@home", "/home/cws/.ssh/id_ed25519")
-	config := auth.Config("root")
-	client := config.Client(ipAddress, "22")
-	defer client.Close()
-
-	output := client.RunCmd("uname -a")
-	fmt.Println(output)
-
-	dir := "/home/cws/go/src/kubeprov/assets/coreos/"
-	client.UploadFile(dir+"ignition.json", "/root", false)
-	client.UploadFile(dir+"install.sh", "/root", true)
-
-	output2 := client.RunCmd("./install.sh")
-	fmt.Println(output2)
-}
+	if err := ssh.WaitForOpenPort(serverInst.IPv4(), 22, 2 * time.Second, 60 * time.Second); err != nil {
+		log.Fatal("Port closed after timeout.")
+	}*/

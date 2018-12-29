@@ -13,24 +13,26 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
-//Key hold the key data for secure authentication
+// Key holds the key data for secure authentication
 type Key struct {
 	name           string
 	privateKeyPath string
 	signer         ssh.Signer
 }
 
-//Config holds the config data of the ssh client
+// Config holds the config data of the ssh client
 type Config struct {
 	clientConfig *ssh.ClientConfig
 }
 
-//Client holds the connection handle
+// Client holds the connection handle
 type Client struct {
+	address string
+	port int64
 	client *ssh.Client
 }
 
-//AuthKey reads a private SSH key and creates a signiture
+// AuthKey reads a private SSH key and creates a signiture
 func AuthKey(id string, filePath string) *Key {
 
 	privateKey, err := ioutil.ReadFile(filePath)
@@ -50,7 +52,7 @@ func AuthKey(id string, filePath string) *Key {
 	}
 }
 
-//Config holds the ssh connection configuration
+// Config holds the ssh connection configuration
 func (key *Key) Config(user string) *Config {
 
 	config := &ssh.ClientConfig{
@@ -65,15 +67,18 @@ func (key *Key) Config(user string) *Config {
 	}
 }
 
-//Client establishes a connection
-func (config *Config) Client(ip string, port string) *Client {
+// Client establishes a connection
+func (config *Config) Client(ip string, port int) *Client {
 
-	client, err := ssh.Dial("tcp", ip+":"+port, config.clientConfig)
+	endpoint := fmt.Sprintf("%s:%d", ip, port);
+	client, err := ssh.Dial("tcp", endpoint, config.clientConfig)
 	if err != nil {
 		log.Fatal("Failed to dial: ", err)
 	}
 
 	return &Client{
+		address: ip,
+		port: port,
 		client: client,
 	}
 }
@@ -88,12 +93,12 @@ func (c *Client) session() *ssh.Session {
 	return session
 }
 
-//Close the connection
+// Close the connection
 func (c *Client) Close() {
 	c.client.Close()
 }
 
-//RunCmd executes a shell command
+// RunCmd executes a shell command on the remote server
 func (c *Client) RunCmd(cmd string) string {
 
 	session := c.session()
@@ -145,3 +150,17 @@ func (c *Client) UploadFile(srcFile string, destPath string, executable bool) er
 
 	return nil
 }
+
+// WaitForOpenPort
+func (c *Client) WaitForOpenPort() *Client {
+
+	interval := 2 * time.Second
+	timeout := 60 * time.Second
+
+	if err := WaitForOpenPort(c.address, c.port, interval, timeout); err != nil {
+		log.Fatal("Port is closed. Check your firewall.")
+	}
+
+	return c
+}
+

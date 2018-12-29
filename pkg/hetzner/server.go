@@ -25,7 +25,7 @@ type ServerSpec struct {
 	options hcloud.ServerCreateOpts
 }
 
-// ServerInstance represents cloud server taht was previously created
+// ServerInstance represents cloud server that was previously created
 type ServerInstance struct {
 	spec *ServerSpec
 	server *hcloud.Server
@@ -39,7 +39,7 @@ func Connect() *CloudClient {
 }
 
 // ServerSpec creates a cloud server specification
-func (c *CloudClient) ServerSpec(keyid string, name string, stype string, image string) *ServerSpec {
+func (c *CloudClient) ServerSpec(keyid string, name string, stype string, image *ImageSpec) *ServerSpec {
 
 	if c.sshKey == nil {
 		c.getSSHKey(keyid)
@@ -51,9 +51,10 @@ func (c *CloudClient) ServerSpec(keyid string, name string, stype string, image 
         ServerType: &hcloud.ServerType{
             Name: stype,
         },
-        Image: &hcloud.Image{
-            Name: image,
-        },
+        Image: image.spec,
+        //&hcloud.Image{
+        //    Name: image,
+        //},
         StartAfterCreate: &flagFalse,
     }
     serverOpts.SSHKeys = append(serverOpts.SSHKeys, c.sshKey)
@@ -269,16 +270,33 @@ func (s *ServerInstance) IPv4() string {
 	return s.server.PublicNet.IPv4.IP.String()
 }
 
+func (s *ServerInstance) ServerDelete() {
+	
+	c := s.spec.cc
+	server := s.server
+
+	action, _, err := c.client.Server.delete(context.Background(), server)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if err := c.waitForAction(action); err != nil {
+		log.Fatal("could not delete server")
+    }
+
+    fmt.Printf("Server %d deleted\n", server.ID)
+
+}
+
 // Create an image
-func (s *ServerInstance) CreateImage() *ServerInstance {
+func (s *ServerInstance) CreateSnapshot(description string) *ImageSpec {
 
 	c := s.spec.cc
 	server := s.server
 
-	os := "CoreOS"
 	opts := &hcloud.ServerCreateImageOpts{
 		Type: "snapshot",
-		Description: &os,
+		Description: &description,
 	}
 	result, _, err :=  c.client.Server.CreateImage(context.Background(), server, opts)
 	if err != nil {
@@ -291,5 +309,7 @@ func (s *ServerInstance) CreateImage() *ServerInstance {
 
     fmt.Printf("Server image created.\n")
 
-	return s
+	return &ImageSpec {
+		spec: result.Image,
+	}
 }
