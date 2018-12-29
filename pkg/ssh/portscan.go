@@ -20,8 +20,7 @@ func ScanPort(ip string, port int, interval time.Duration, timeout time.Duration
     
     if err != nil {
         time.Sleep(interval)
-        ScanPort(ip, port, interval, timeout - interval)
-        return false
+        return ScanPort(ip, port, interval, timeout - interval)
     }
 
     conn.Close()
