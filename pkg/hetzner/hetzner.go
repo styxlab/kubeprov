@@ -275,13 +275,14 @@ func (s *ServerInstance) CreateImage() *ServerInstance {
 	c := s.spec.cc
 	server := s.server
 
+	os := "CoreOS"
 	opts := &hcloud.ServerCreateImageOpts{
 		Type: "snapshot",
-		Description: "CoreOS",
+		Description: &os,
 	}
 	result, _, err :=  c.client.Server.CreateImage(context.Background(), server, opts)
 	if err != nil {
-		return err
+		log.Fatal(err)
 	}
 
 	if err := c.waitForAction(result.Action); err != nil {
