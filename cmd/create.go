@@ -27,7 +27,7 @@ func CreateCluster(cmd *cobra.Command, args []string) {
 	createServer("core02", imageSpec)
 }
 
-func createImageForCoreOS() *ImageSpec {
+func createImageForCoreOS() *hetzner.ImageSpec {
 
 	hc := hetzner.Connect()
 	imageSpec := hetzner.ImageByName("centos-7")
@@ -64,7 +64,7 @@ func installCoreOS(ipAddress string) {
 	fmt.Println(output)
 }
 
-func createServer(name string, image *ImageSpec){
+func createServer(name string, image *hetzner.ImageSpec){
 
 	hc := hetzner.Connect()
 	serverSpec := hc.ServerSpec("cws@home", name, "cx11", image)
