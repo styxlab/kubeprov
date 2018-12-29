@@ -9,8 +9,6 @@ import (
 	"os"
 	"path"
 	"time"
-	"net"
-	"strings"
 
 	"golang.org/x/crypto/ssh"
 )
@@ -146,24 +144,4 @@ func (c *Client) UploadFile(srcFile string, destPath string, executable bool) er
 	}
 
 	return nil
-}
-
-//Scans for open port
-func ScanPort(ip string, port int, timeout time.Duration) bool {
-    target := fmt.Sprintf("%s:%d", ip, port)
-    conn, err := net.DialTimeout("tcp", target, timeout)
-    
-    if err != nil {
-        if strings.Contains(err.Error(), "too many open files") {
-            time.Sleep(timeout)
-            ScanPort(ip, port, timeout)
-        } else {
-            fmt.Println(port, "closed")
-        }
-        return false
-    }
-    
-    conn.Close()
-    fmt.Println(port, "open")
-    return true
 }
