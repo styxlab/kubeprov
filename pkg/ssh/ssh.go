@@ -57,7 +57,7 @@ func (key *Key) Config(user string) *Config {
 		User:            user,
 		Auth:            []ssh.AuthMethod{ssh.PublicKeys(key.signer)},
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
-		Timeout:         0 * time.Second,
+		Timeout:         60 * time.Second,
 	}
 
 	return &Config{
@@ -144,4 +144,24 @@ func (c *Client) UploadFile(srcFile string, destPath string, executable bool) er
 	}
 
 	return nil
+}
+
+//Scans for open port
+func ScanPort(ip string, port int, timeout time.Duration) bool {
+    target := fmt.Sprintf("%s:%d", ip, port)
+    conn, err := net.DialTimeout("tcp", target, timeout)
+    
+    if err != nil {
+        if strings.Contains(err.Error(), "too many open files") {
+            time.Sleep(timeout)
+            ScanPort(ip, port, timeout)
+        } else {
+            fmt.Println(port, "closed")
+        }
+        return false
+    }
+    
+    conn.Close()
+    fmt.Println(port, "open")
+    return true
 }

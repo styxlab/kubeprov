@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/styxlab/kubeprov/pkg/hetzner"
@@ -34,27 +35,30 @@ func CreateCluster(cmd *cobra.Command, args []string) {
 
 	serverInst.Reboot()
 
-	if err := ssh.ExecCmdLocal("./portwait.sh", serverInst.IPv4()); err != nil {
+	/*if err := ssh.ExecCmdLocal("./portwait.sh", serverInst.IPv4()); err != nil {
 		 fmt.Printf("Error executing remote command: %s\n", err)
-	}
+	}*/
+
+	ssh.ScanPort(ipAddress, 22, 120 * time.Second)
 
 	auth := ssh.AuthKey("cws@home", "/home/cws/.ssh/id_ed25519")
-	config2 := auth.Config("core")
-	client2 := config2.Client(serverInst.IPv4(), "22")
-	defer client2.Close()
+	config := auth.Config("core")
+	client := config.Client(serverInst.IPv4(), "22")
+	defer client.Close()
 
-	output2 := client2.RunCmd("uname -a")
-	fmt.Println(output2)
+	output := client.RunCmd("uname -a")
+	fmt.Println(output)
 
-	fmt.Printf("CoreOs should be installed: ssh -oStrictHostKeyChecking=no core@%s\n", serverInst.IPv4())
+	fmt.Printf("CoreOs installed: ssh -oStrictHostKeyChecking=no core@%s\n", serverInst.IPv4())
 }
 
 func installCoreOS(ipAddress string) {
 
-	if err := ssh.ExecCmdLocal("./portwait.sh", ipAddress); err != nil {
+	/*if err := ssh.ExecCmdLocal("./portwait.sh", ipAddress); err != nil {
 		 fmt.Printf("Error executing remote command: %s\n", err)
 	}
-	fmt.Printf("Server should be in rescue mode now: ssh -oStrictHostKeyChecking=no root@%s\n", ipAddress)
+	fmt.Printf("Server should be in rescue mode now: ssh -oStrictHostKeyChecking=no root@%s\n", ipAddress)*/
+	ssh.ScanPort(ipAddress, 22, 120 * time.Second)
 
 	auth := ssh.AuthKey("cws@home", "/home/cws/.ssh/id_ed25519")
 	config := auth.Config("root")
