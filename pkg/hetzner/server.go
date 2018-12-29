@@ -275,17 +275,12 @@ func (s *ServerInstance) ServerDelete() {
 	c := s.spec.cc
 	server := s.server
 
-	action, _, err := c.client.Server.Delete(context.Background(), server)
+	_, err := c.client.Server.Delete(context.Background(), server)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	if err := c.waitForAction(action); err != nil {
-		log.Fatal("could not delete server")
-    }
-
     fmt.Printf("Server %d deleted\n", server.ID)
-
 }
 
 // Create an image
