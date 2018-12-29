@@ -277,7 +277,7 @@ func (s *ServerInstance) CreateImage() *ServerInstance {
 
 	opts := &hcloud.ServerCreateImageOpts{
 		Type: "snapshot",
-		Description: "coreos",
+		Description: "CoreOS",
 	}
 	result, _, err :=  c.client.Server.CreateImage(context.Background(), server, opts)
 	if err != nil {
