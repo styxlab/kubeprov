@@ -35,7 +35,7 @@ func CreateCluster(cmd *cobra.Command, args []string) {
 
 func installCoreOS(ipAddress string) {
 
-	if err := ssh.ExecCmdLocal("sh","-c",'"while ! nmap -Pn -p 22'+ipAddress+'|grep open &>/dev/null; do sleep 2; done"'); err != nil {
+	if err := ssh.ExecCmdLocal("sh","-c",'"while ! nmap -Pn -p 22 ' + ipAddress + ' |grep open &>/dev/null; do sleep 2; done"'); err != nil {
 		 fmt.Printf("Error executing remote command: %s\n", err)
 	}
 	fmt.Printf("Server should be in rescue mode now: ssh -oStrictHostKeyChecking=no root@%s\n", ipAddress)
