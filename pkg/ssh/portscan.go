@@ -2,10 +2,8 @@ package ssh
 
 import (
     "fmt"
-
     "time"
     "net"
-    "strings"
 )
 
 //Scans for open port
