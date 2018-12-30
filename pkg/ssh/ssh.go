@@ -154,6 +154,9 @@ func (c *Client) UploadFile(srcFile string, destPath string, executable bool) er
 // WaitForOpenPort
 func (c *Client) WaitForOpenPort() *Client {
 
+
+	fmt.Println("WaitForOpenPort");
+
 	interval := 2 * time.Second
 	timeout := 120 * time.Second
 

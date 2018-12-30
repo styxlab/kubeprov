@@ -14,7 +14,7 @@ func init() {
 
 var createCmd = &cobra.Command{
 	Use:     "create",
-	Short:   "creates a new kubernetes cluster",
+	Short:   "creates a new kubernetes cluster on hetzner cloud",
 	Run: CreateCluster,
 }
 
@@ -48,12 +48,19 @@ func createImageForCoreOS() *hetzner.ImageSpec {
 
 func installCoreOS(ipAddress string) {
 
+	fmt.Println("Install CoreOS on server with ip: %s.", ipAddress);
+
 	auth := ssh.AuthKey("cws@home", "/home/cws/.ssh/id_ed25519")
 	config := auth.Config("root")
 	client := config.Client(ipAddress, 22)
+	
+	//Wait for open port close and reopen
+	client.WaitForOpenPort().Close()
+
+	client = config.Client(ipAddress, 22)
 	defer client.Close()
 
-	output := client.WaitForOpenPort().RunCmd("uname -a")
+	output := client.RunCmd("uname -a")
 	fmt.Println(output)
 
 	dir := "/home/cws/go/src/kubeprov/assets/coreos/"
