@@ -155,7 +155,7 @@ func (c *Client) UploadFile(srcFile string, destPath string, executable bool) er
 func (c *Client) WaitForOpenPort() *Client {
 
 	interval := 2 * time.Second
-	timeout := 60 * time.Second
+	timeout := 120 * time.Second
 
 	if err := WaitForOpenPort(c.address, c.port, interval, timeout); err != nil {
 		log.Fatal("Port is closed. Check your firewall.")

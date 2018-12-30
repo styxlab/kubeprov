@@ -31,7 +31,7 @@ func createImageForCoreOS() *hetzner.ImageSpec {
 
 	hc := hetzner.Connect()
 	imageSpec := hetzner.ImageByName("centos-7")
-	serverSpec := hc.ServerSpec("cws@home", "coreOS-install", "cx11", imageSpec)
+	serverSpec := hc.ServerSpec("cws@home", "coreos-install", "cx11", imageSpec)
 	serverInst := serverSpec.Create().EnableRescue().PowerOn().WaitForRunning()
 	//serverInst := serverSpec.Status()
 
