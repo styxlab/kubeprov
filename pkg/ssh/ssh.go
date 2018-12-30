@@ -70,6 +70,13 @@ func (key *Key) Config(user string) *Config {
 // Client establishes a connection
 func (config *Config) Client(ip string, port int) *Client {
 
+	interval := 2 * time.Second
+	timeout := 60 * time.Second
+
+	if err := WaitForOpenPort(ip, port, interval, timeout); err != nil {
+		log.Fatal("Port is closed. Check your firewall.")
+	}
+
 	endpoint := fmt.Sprintf("%s:%d", ip, port);
 	client, err := ssh.Dial("tcp", endpoint, config.clientConfig)
 	if err != nil {
@@ -150,20 +157,3 @@ func (c *Client) UploadFile(srcFile string, destPath string, executable bool) er
 
 	return nil
 }
-
-// WaitForOpenPort
-func (c *Client) WaitForOpenPort() *Client {
-
-
-	fmt.Println("WaitForOpenPort");
-
-	interval := 2 * time.Second
-	timeout := 120 * time.Second
-
-	if err := WaitForOpenPort(c.address, c.port, interval, timeout); err != nil {
-		log.Fatal("Port is closed. Check your firewall.")
-	}
-
-	return c
-}
-

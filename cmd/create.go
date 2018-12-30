@@ -48,16 +48,11 @@ func createImageForCoreOS() *hetzner.ImageSpec {
 
 func installCoreOS(ipAddress string) {
 
-	fmt.Println("Install CoreOS on server with ip: %s.", ipAddress);
+	fmt.Println("Install CoreOS on server with ip: ", ipAddress);
 
 	auth := ssh.AuthKey("cws@home", "/home/cws/.ssh/id_ed25519")
 	config := auth.Config("root")
 	client := config.Client(ipAddress, 22)
-	
-	//Wait for open port close and reopen
-	client.WaitForOpenPort().Close()
-
-	client = config.Client(ipAddress, 22)
 	defer client.Close()
 
 	output := client.RunCmd("uname -a")
