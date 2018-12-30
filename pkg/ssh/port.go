@@ -16,8 +16,7 @@ func WaitForOpenPort(ip string, port int, interval time.Duration, timeout time.D
 
     target := fmt.Sprintf("%s:%d", ip, port)
     
-    conn, err := net.DialTimeout("tcp", target, interval)
-    
+    conn, err := net.DialTimeout("tcp", target, interval)    
     if err != nil {
         time.Sleep(interval)
         return WaitForOpenPort(ip, port, interval, timeout - interval)

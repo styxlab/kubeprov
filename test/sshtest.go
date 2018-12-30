@@ -9,9 +9,9 @@ import (
 
 func main() {
 
-	ipAddress := "116.203.24.10"
+	ipAddress := "1.2.3.4"
 
-	auth := ssh.AuthKey("cws@home", "/home/cws/.ssh/id_ed25519")
+	auth := ssh.AuthKey("demo", "/home/demo/.ssh/id_ed25519")
 	config := auth.Config("root")
 	client := config.Client(ipAddress, "22")
 	defer client.Close()
@@ -19,7 +19,7 @@ func main() {
 	output := client.RunCmd("uname -a; ls -l")
 	fmt.Println(output)
 
-	dir := "/home/cws/go/src/kubeprov/assets/coreos/"
+	dir := "/home/demo/go/src/kubeprov/assets/coreos/"
 	client.UploadFile(dir+"ignition.json", "/root", false)
 	client.UploadFile(dir+"install.sh", "/root", true)
 
