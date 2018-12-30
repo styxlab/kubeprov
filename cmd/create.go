@@ -70,6 +70,8 @@ func createServer(name string, image *hetzner.ImageSpec){
 
 	hc := hetzner.Connect()
 	serverSpec := hc.ServerSpec("cws@home", name, "cx11", image)
+
+	//TODO: concurrent server starting
 	serverSpec.Create().PowerOn().WaitForRunning()
 }
 
