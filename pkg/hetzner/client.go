@@ -6,7 +6,8 @@ import (
 
     "github.com/hetznercloud/hcloud-go/hcloud"
  	"github.com/go-kit/kit/log/term"
- 	"github.com/gosuri/uiprogress"
+ 	"github.com/thcyron/uiprogress"
+ 	"github.com/wayneashleyberry/terminal-dimensions"
 )
 
 // Client holds the connection data for the Hetzner Cloud interaction
@@ -33,28 +34,29 @@ func Connect() *Client {
 
 func (c *Client) waitForAction(action *hcloud.Action) error {
 
-	progress, errs := c.client.Action.WatchProgress(c.context, action)
+	progressCh, errCh := c.client.Action.WatchProgress(c.context, action)
 
 	if term.IsTerminal(os.Stdout) {
-		prog := uiprogress.New()
+		progress := uiprogress.New()
 
-		prog.Start()
-		bar := prog.AddBar(100).AppendCompleted().PrependElapsed()
-		bar.Width = 40
+		progress.Start()
+		bar := progress.AddBar(100).AppendCompleted().PrependElapsed()
+		w, _ := terminaldimensions.Width()
+		bar.Width = int(w)-20
 		bar.Empty = ' '
 
 		for {
 			select {
-			case err := <-errs:
+			case err := <-errCh:
 				if err == nil {
 					bar.Set(100)
 				}
-				prog.Stop()
+				progress.Stop()
 				return err
-			case p := <-progress:
+			case p := <-progressCh:
 				bar.Set(p)
 			}
 		}
 	}
-	return <-errs
+	return <-errCh
 }

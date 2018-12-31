@@ -28,8 +28,8 @@ func CreateCluster(cmd *cobra.Command, args []string) {
 	core02 := createServer("core02", imageSpec)
 
 	hc.ImageDelete(imageSpec)
-	core01.ServerDelete()
-	core02.ServerDelete()
+	core01.Delete()
+	core02.Delete()
 }
 
 func createImageForCoreOS(hc *hetzner.Client) *hetzner.ImageSpec {
@@ -45,7 +45,7 @@ func createImageForCoreOS(hc *hetzner.Client) *hetzner.ImageSpec {
 	imageSpec = serverInst.CreateSnapshot("CoreOS")
 
 	// Delete server 
-	serverInst.ServerDelete()
+	serverInst.Delete()
 
 	return imageSpec
 }

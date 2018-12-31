@@ -1,7 +1,7 @@
 package hetzner
 
 import (
-    "context"
+	"context"
     "fmt"
     "time"
     "log"
@@ -17,6 +17,7 @@ type ServerSpec struct {
 
 // ServerInstance represents cloud server that was previously created
 type ServerInstance struct {
+	context context.Context
 	spec *ServerSpec
 	server *hcloud.Server
 }
@@ -31,9 +32,6 @@ func (c *Client) ServerSpec(name string, stype string, image *ImageSpec) *Server
             Name: stype,
         },
         Image: image.spec,
-        //&hcloud.Image{
-        //    Name: image,
-        //},
         StartAfterCreate: &flagFalse,
     }
     serverOpts.SSHKeys = append(serverOpts.SSHKeys, c.sshKey)
@@ -44,13 +42,23 @@ func (c *Client) ServerSpec(name string, stype string, image *ImageSpec) *Server
     }
 }
 
+// Name of server instance for convenience
+func (s *ServerInstance) Name() string {
+	return s.server.Name
+}
+
+// IPv4 address of server instance for convenience
+func (s *ServerInstance) IPv4() string {
+	return s.server.PublicNet.IPv4.IP.String()
+}
+
+
 // Create makes a new cloud server instance
 func (s *ServerSpec) Create() *ServerInstance {
 
 	client := s.cc.client
 
-	fmt.Printf("creating server '%s'...", s.options.Name)
-    result, _, err := client.Server.Create(context.Background(), s.options)
+    result, _, err := client.Server.Create(s.cc.context, s.options)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -58,9 +66,24 @@ func (s *ServerSpec) Create() *ServerInstance {
 		log.Fatal("could not create server")
     }
     return &ServerInstance {
+    	context: s.cc.context,
     	spec: s,
     	server: result.Server,
     }
+}
+
+func (s *ServerInstance) Delete() *ServerInstance {
+	
+	c := s.spec.cc
+	server := s.server
+
+	_, err := c.client.Server.Delete(s.context, server)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+    fmt.Printf("Server %d deleted\n", server.ID)
+    return s
 }
 
 // Status retreives the current status
@@ -68,7 +91,7 @@ func (s *ServerSpec) Status() *ServerInstance {
 
 	client := s.cc.client
 
-	result, _, err := client.Server.GetByName(context.Background(), s.options.Name)
+	result, _, err := client.Server.GetByName(s.cc.context, s.options.Name)
     if err != nil {
       	log.Fatal(err)
     }
@@ -77,31 +100,10 @@ func (s *ServerSpec) Status() *ServerInstance {
     }
 
  	return &ServerInstance {
+ 		context: s.cc.context,
     	spec: s,
     	server: result,
     }
-}
-
-// EnableRescue activates the rescue mode
-func (s *ServerInstance) EnableRescue() *ServerInstance {
-
-	c := s.spec.cc
-
-	rescueOpts := hcloud.ServerEnableRescueOpts{
-        Type: "linux64",
-    }
-    rescueOpts.SSHKeys = append(rescueOpts.SSHKeys, c.sshKey)
-
-    rescue, _, err := c.client.Server.EnableRescue(context.Background(), s.server, rescueOpts)
-    if err != nil {
-		log.Fatal(err)
-	}
-    if err := c.waitForAction(rescue.Action); err != nil {
-		log.Fatal("could not enable rescue")
-    }
-
-    s.server.RescueEnabled = true
-    return s
 }
 
 // WaitForRunning waits for the server to attain the "running" status
@@ -113,7 +115,7 @@ func (s *ServerInstance) WaitForRunning() *ServerInstance {
 	//TODO: Timeout
 
 	for server.Status != "running" {
-		result, _, err := c.client.Server.GetByName(context.Background(), server.Name)
+		result, _, err := c.client.Server.GetByName(s.context, server.Name)
     	if err != nil {
         	log.Fatal(err)
     	}
@@ -128,32 +130,26 @@ func (s *ServerInstance) WaitForRunning() *ServerInstance {
  	return s
 }
 
-// Reboot the cloud server
-func (s *ServerInstance) Reboot() *ServerInstance {
+// EnableRescue activates the rescue mode
+func (s *ServerInstance) EnableRescue() *ServerInstance {
 
 	c := s.spec.cc
-	//server := s.server
 
-	server, _, err := c.client.Server.GetByName(context.Background(), s.server.Name)
-		if err != nil {
+	rescueOpts := hcloud.ServerEnableRescueOpts{
+        Type: "linux64",
+    }
+    rescueOpts.SSHKeys = append(rescueOpts.SSHKeys, c.sshKey)
+
+    rescue, _, err := c.client.Server.EnableRescue(s.context, s.server, rescueOpts)
+    if err != nil {
 		log.Fatal(err)
 	}
-	if server == nil {
-		log.Fatal("server not found")
-	}
-
-	action, _, err := c.client.Server.Reboot(context.Background(), server)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	if err := c.waitForAction(action); err != nil {
-		log.Fatal("could not reboot server")
+    if err := c.waitForAction(rescue.Action); err != nil {
+		log.Fatal("could not enable rescue")
     }
 
-    fmt.Printf("Server %d rebooted\n", server.ID)
-
- 	return s
+    s.server.RescueEnabled = true
+    return s
 }
 
 // WaitForRescueDisabled which is disabled after the reboot
@@ -165,7 +161,7 @@ func (s *ServerInstance) WaitForRescueDisabled() *ServerInstance {
 	//TODO: Timeout
 
 	for server.RescueEnabled != false {
-		result, _, err := c.client.Server.GetByName(context.Background(), server.Name)
+		result, _, err := c.client.Server.GetByName(s.context, server.Name)
     	if err != nil {
         	log.Fatal(err)
     	}
@@ -185,7 +181,7 @@ func (s *ServerInstance) PowerOn() *ServerInstance {
 	c := s.spec.cc
 	server := s.server
 
-	action, _, err := c.client.Server.Poweron(context.Background(), server)
+	action, _, err := c.client.Server.Poweron(s.context, server)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -199,28 +195,32 @@ func (s *ServerInstance) PowerOn() *ServerInstance {
 	return s
 }
 
-// Name of server instance for convenience
-func (s *ServerInstance) Name() string {
-	return s.server.Name
-}
+// Reboot the cloud server
+func (s *ServerInstance) Reboot() *ServerInstance {
 
-// IPv4 address of server instance for convenience
-func (s *ServerInstance) IPv4() string {
-	return s.server.PublicNet.IPv4.IP.String()
-}
-
-func (s *ServerInstance) ServerDelete() *ServerInstance {
-	
 	c := s.spec.cc
-	server := s.server
+	//server := s.server
 
-	_, err := c.client.Server.Delete(context.Background(), server)
+	server, _, err := c.client.Server.GetByName(s.context, s.server.Name)
+		if err != nil {
+		log.Fatal(err)
+	}
+	if server == nil {
+		log.Fatal("server not found")
+	}
+
+	action, _, err := c.client.Server.Reboot(s.context, server)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-    fmt.Printf("Server %d deleted\n", server.ID)
-    return s
+	if err := c.waitForAction(action); err != nil {
+		log.Fatal("could not reboot server")
+    }
+
+    fmt.Printf("Server %d rebooted\n", server.ID)
+
+ 	return s
 }
 
 // Create an image
@@ -233,7 +233,7 @@ func (s *ServerInstance) CreateSnapshot(description string) *ImageSpec {
 		Type: "snapshot",
 		Description: &description,
 	}
-	result, _, err :=  c.client.Server.CreateImage(context.Background(), server, opts)
+	result, _, err :=  c.client.Server.CreateImage(s.context, server, opts)
 	if err != nil {
 		log.Fatal(err)
 	}
