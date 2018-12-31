@@ -52,6 +52,16 @@ func (s *ServerInstance) IPv4() string {
 	return s.server.PublicNet.IPv4.IP.String()
 }
 
+// PublicKeyName
+func (s *ServerInstance) PublicKeyName() string {
+	return s.spec.cc.config.publicKeyName
+}
+
+// PrivateKeyFile
+func (s *ServerInstance) PrivateKeyFile() string {
+	return s.spec.cc.config.privateKeyFile
+}
+
 
 // Create makes a new cloud server instance
 func (s *ServerSpec) Create() *ServerInstance {

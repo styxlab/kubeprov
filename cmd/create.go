@@ -25,11 +25,13 @@ func CreateCluster(cmd *cobra.Command, args []string) {
 
 	//create new CoreOS servers
 	core01 := createServer("core01", imageSpec)
-	core02 := createServer("core02", imageSpec)
+	//core02 := createServer("core02", imageSpec)
+
+	installMatchbox(core01)
 
 	hc.ImageDelete(imageSpec)
-	core01.Delete()
-	core02.Delete()
+	//core01.Delete()
+	//core02.Delete()
 }
 
 func createImageForCoreOS(hc *hetzner.Client) *hetzner.ImageSpec {
@@ -37,24 +39,22 @@ func createImageForCoreOS(hc *hetzner.Client) *hetzner.ImageSpec {
 	imageSpec := hetzner.ImageByName("centos-7")
 	serverSpec := hc.ServerSpec("coreos-install", "cx11", imageSpec)
 	serverInst := serverSpec.Create().EnableRescue().PowerOn().WaitForRunning()
-	//serverInst := serverSpec.Status()
 
-	installCoreOS(serverInst.IPv4())
-	
+	installCoreOS(serverInst)
+
 	// Create the image before reboot in order to preserver ignition.json
 	imageSpec = serverInst.CreateSnapshot("CoreOS")
-
-	// Delete server 
 	serverInst.Delete()
 
 	return imageSpec
 }
 
-func installCoreOS(ipAddress string) {
+func installCoreOS(s *hetzner.ServerInstance) {
 
-	fmt.Println("Install CoreOS on server with ip: ", ipAddress);
+	ipAddress := s.IPv4()
+	fmt.Println("Install CoreOS on", ipAddress);
 
-	auth := ssh.AuthKey("cws@home", "/home/cws/.ssh/id_ed25519")
+	auth := ssh.AuthKey(s.PublicKeyName(), s.PrivateKeyFile())
 	config := auth.Config("root")
 	client := config.Client(ipAddress, 22)
 	defer client.Close()
@@ -62,11 +62,11 @@ func installCoreOS(ipAddress string) {
 	output := client.RunCmd("uname -a")
 	fmt.Println(output)
 
-	dir := "/home/cws/go/src/kubeprov/assets/coreos/"
+	dir := "./assets/coreos/"
 	client.UploadFile(dir+"ignition.json", "/root", false)
 	client.UploadFile(dir+"install.sh", "/root", true)
 
-	output = client.RunCmd("./install.sh")
+	output = client.RunCmd("./install.sh; ls -l; cat ./install.sh")
 	fmt.Println(output)
 }
 
@@ -75,4 +75,22 @@ func createServer(name string, image *hetzner.ImageSpec) *hetzner.ServerInstance
 	hc := hetzner.Connect()
 	serverSpec := hc.ServerSpec(name, "cx11", image)
 	return serverSpec.Create().PowerOn().WaitForRunning()
+}
+
+func installMatchbox(s *hetzner.ServerInstance){
+
+	ipAddress := s.IPv4()
+	fmt.Println("Install Matchbox on", ipAddress);
+
+	auth := ssh.AuthKey(s.PublicKeyName(), s.PrivateKeyFile())
+	config := auth.Config("core")
+	client := config.Client(ipAddress, 22)
+	defer client.Close()
+
+	dir := "./assets/coreos/"
+	client.UploadFile(dir+"matchbox.sh", "/home/core", true)
+
+	output := client.RunCmd("./matchbox.sh")
+	fmt.Println(output)
+
 }

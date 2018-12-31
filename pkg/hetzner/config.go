@@ -24,6 +24,7 @@ var DefaultConfigFile string
 
 var publicKeyPath string
 var publicKeyFile string
+var privateKeyFile string
 
 func init(){
 	usr, err := user.Current()
@@ -42,6 +43,7 @@ func init(){
 
 		publicKeyPath = filepath.Join(usr.HomeDir, ".ssh")
 		publicKeyFile = filepath.Join(publicKeyPath, "id_" + SSHProtocol + ".pub")
+		privateKeyFile= filepath.Join(publicKeyPath, "id_" + SSHProtocol)
 	}
 }
 
@@ -50,6 +52,7 @@ type Config struct {
 	token string
 	publicKeyName string
 	publicKey string
+	privateKeyFile string
 	configPath string
 }
 
@@ -57,6 +60,7 @@ func GetOrCreateConfig() *Config {
 
 	c := &Config { 
 		context: context.Background(),
+		privateKeyFile: privateKeyFile,
 		configPath: DefaultConfigPath,
 	}
 
