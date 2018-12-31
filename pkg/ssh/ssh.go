@@ -73,6 +73,7 @@ func (config *Config) Client(ip string, port int) *Client {
 	interval := 2 * time.Second
 	timeout := 60 * time.Second
 
+	log.Printf("Wait for open port...")
 	if err := WaitForOpenPort(ip, port, interval, timeout); err != nil {
 		log.Fatal("Port is closed. Check your firewall.")
 	}
