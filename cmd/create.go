@@ -66,7 +66,7 @@ func installCoreOS(s *hetzner.ServerInstance) {
 	client.UploadFile(dir+"ignition.json", "/root", false)
 	client.UploadFile(dir+"install.sh", "/root", true)
 
-	output = client.RunCmd("./install.sh; ls -l; cat ./install.sh")
+	output = client.RunCmd("./install.sh")
 	fmt.Println(output)
 }
 
