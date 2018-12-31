@@ -20,18 +20,22 @@ var createCmd = &cobra.Command{
 
 func CreateCluster(cmd *cobra.Command, args []string) {
 
-	imageSpec := createImageForCoreOS()
+	hc := hetzner.Connect()
+	imageSpec := createImageForCoreOS(hc)
 
 	//create new CoreOS servers
-	createServer("core01", imageSpec)
-	createServer("core02", imageSpec)
+	core01 := createServer("core01", imageSpec)
+	core02 := createServer("core02", imageSpec)
+
+	hc.ImageDelete(imageSpec)
+	core01.ServerDelete()
+	core02.ServerDelete()
 }
 
-func createImageForCoreOS() *hetzner.ImageSpec {
+func createImageForCoreOS(hc *hetzner.Client) *hetzner.ImageSpec {
 
-	hc := hetzner.Connect()
 	imageSpec := hetzner.ImageByName("centos-7")
-	serverSpec := hc.ServerSpec("cws@home", "coreos-install", "cx11", imageSpec)
+	serverSpec := hc.ServerSpec("coreos-install", "cx11", imageSpec)
 	serverInst := serverSpec.Create().EnableRescue().PowerOn().WaitForRunning()
 	//serverInst := serverSpec.Status()
 
@@ -66,33 +70,9 @@ func installCoreOS(ipAddress string) {
 	fmt.Println(output)
 }
 
-func createServer(name string, image *hetzner.ImageSpec){
-
-	hc := hetzner.Connect()
-	serverSpec := hc.ServerSpec("cws@home", name, "cx11", image)
-
+func createServer(name string, image *hetzner.ImageSpec) *hetzner.ServerInstance {
 	//TODO: concurrent server starting
-	serverSpec.Create().PowerOn().WaitForRunning()
+	hc := hetzner.Connect()
+	serverSpec := hc.ServerSpec(name, "cx11", image)
+	return serverSpec.Create().PowerOn().WaitForRunning()
 }
-
-
-	/* serverInst.Reboot()
-
-	auth := ssh.AuthKey("cws@home", "/home/cws/.ssh/id_ed25519")
-	config := auth.Config("core")
-	client := config.Client(serverInst.IPv4(), "22")
-	defer client.Close()
-
-	output := client.RunCmd("uname -a")
-	fmt.Println(output)
-
-	fmt.Printf("CoreOs installed: ssh -oStrictHostKeyChecking=no core@%s\n", serverInst.IPv4())
-
-	//now you can install a new server based on the new coreos image
-	imageID: = imageInst.id
-	serverSpec2 := hc.ServerSpec("cws@home", "core02", "cx11", imageID)
-	serverInst2 := serverSpec2.Create().PowerOn().WaitForRunning()
-
-	if err := ssh.WaitForOpenPort(serverInst.IPv4(), 22, 2 * time.Second, 60 * time.Second); err != nil {
-		log.Fatal("Port closed after timeout.")
-	}*/

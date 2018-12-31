@@ -5,23 +5,13 @@ import (
     "fmt"
     "time"
     "log"
-    "os"
-    "strings"
 
     "github.com/hetznercloud/hcloud-go/hcloud"
-    "github.com/go-kit/kit/log/term"
-    "github.com/gosuri/uiprogress"
 )
-
-// CloudClient holds the connection data for the Hetzner Cloud interaction
-type CloudClient struct {
-	client *hcloud.Client
-	sshKey *hcloud.SSHKey
-}
 
 // ServerSpec specifies the properties of the cloud server
 type ServerSpec struct {
-	cc *CloudClient
+	cc *Client
 	options hcloud.ServerCreateOpts
 }
 
@@ -31,19 +21,8 @@ type ServerInstance struct {
 	server *hcloud.Server
 }
 
-// Connect opens a new Hetzner Cloud connection
-func Connect() *CloudClient {
-	return &CloudClient {
-		client: hcloud.NewClient(hcloud.WithToken(strings.TrimSpace(os.Getenv("HCLOUD_TOKEN")))),
-	}
-}
-
 // ServerSpec creates a cloud server specification
-func (c *CloudClient) ServerSpec(keyid string, name string, stype string, image *ImageSpec) *ServerSpec {
-
-	if c.sshKey == nil {
-		c.getSSHKey(keyid)
-	}
+func (c *Client) ServerSpec(name string, stype string, image *ImageSpec) *ServerSpec {
 
 	flagFalse := false
     serverOpts := hcloud.ServerCreateOpts{
@@ -63,46 +42,6 @@ func (c *CloudClient) ServerSpec(keyid string, name string, stype string, image 
     	cc: c,
     	options: serverOpts,
     }
-}
-
-func (c *CloudClient) getSSHKey(keyid string) {
-
-	sshKey, _, err := c.client.SSHKey.Get(context.Background(), keyid)
-	if err != nil {
-		log.Fatal(err)
-	}
-    if sshKey == nil {
-        log.Fatalf("we got some problem with the SSH-Key, chances are you are in the wrong context")
-    }
-    c.sshKey = sshKey
-}
-
-func (c *CloudClient) waitForAction(action *hcloud.Action) error {
-
-	progress, errs := c.client.Action.WatchProgress(context.Background(), action)
-
-	if term.IsTerminal(os.Stdout) {
-		prog := uiprogress.New()
-
-		prog.Start()
-		bar := prog.AddBar(100).AppendCompleted().PrependElapsed()
-		bar.Width = 40
-		bar.Empty = ' '
-
-		for {
-			select {
-			case err := <-errs:
-				if err == nil {
-					bar.Set(100)
-				}
-				prog.Stop()
-				return err
-			case p := <-progress:
-				bar.Set(p)
-			}
-		}
-	}
-	return <-errs
 }
 
 // Create makes a new cloud server instance
@@ -270,7 +209,7 @@ func (s *ServerInstance) IPv4() string {
 	return s.server.PublicNet.IPv4.IP.String()
 }
 
-func (s *ServerInstance) ServerDelete() {
+func (s *ServerInstance) ServerDelete() *ServerInstance {
 	
 	c := s.spec.cc
 	server := s.server
@@ -281,6 +220,7 @@ func (s *ServerInstance) ServerDelete() {
 	}
 
     fmt.Printf("Server %d deleted\n", server.ID)
+    return s
 }
 
 // Create an image
