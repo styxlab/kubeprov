@@ -16,7 +16,7 @@ func (c *Client) getOrCreateSSHKey() *Client {
 		log.Fatal(err)
 	}
     if sshKey == nil {
-        c.createSSHKey()
+        sshKey = c.createSSHKey().sshKey
     }
     
     c.sshKey = sshKey
