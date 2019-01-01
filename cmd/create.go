@@ -92,9 +92,9 @@ func installKubernetes(s *hetzner.ServerInstance){
 	defer client.Close()
 
 	dir := "./assets/kubernetes/"
-	client.UploadFile(dir+"kubernetes_install.sh", "/home/core", true)
+	client.UploadFile(dir+"kubeadm_install.sh", "/home/core", true)
 
-	output := client.RunCmd("chmod +x ./kubernetes_install.sh; sudo ./kubernetes_install.sh " + s.Name())
+	output := client.RunCmd("chmod +x ./kubeadm_install.sh; sudo ./kubeadm_install.sh " + s.Name())
 	fmt.Println(output)
 
 }
