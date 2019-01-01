@@ -2,6 +2,8 @@ HOSTNAME=$1
 ROLE=$2
 
 HOMEDIR=$(pwd)
+echo "Homdir1: $HOMEDIR"
+echo "Homdir2: $HOME"
 
 echo "Set hostname to $HOSTNAME as $ROLE"
 hostnamectl set-hostname $HOSTNAME
@@ -43,7 +45,7 @@ if [ "$2" = "master" ]; then
 	/opt/bin/kubeadm init --apiserver-advertise-address=$IPV4  --pod-network-cidr=192.168.0.0/16 --ignore-preflight-errors=NumCPU
 	mkdir -p $HOMEDIR/.kube
 	cp -i /etc/kubernetes/admin.conf $HOMEDIR/.kube/config
-	chown $(id -u):$(id -g) $HOMEDIR/.kube/config
+	chown core:core $HOMEDIR/.kube/config
 
 	kubectl apply -f https://docs.projectcalico.org/v3.3/getting-started/kubernetes/installation/hosted/rbac-kdd.yaml
 	kubectl apply -f https://docs.projectcalico.org/v3.3/getting-started/kubernetes/installation/hosted/kubernetes-datastore/calico-networking/1.7/calico.yaml

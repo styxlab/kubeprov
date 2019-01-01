@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"path"
+	"path/filepath"
 	"time"
 
 	"golang.org/x/crypto/ssh"
@@ -122,14 +123,14 @@ func (c *Client) RunCmd(cmd string) string {
 }
 
 //UploadFile copies a file from a local to a remote machine
-func (c *Client) UploadFile(srcFile string, destPath string, executable bool) error {
+func (c *Client) UploadFile(localFile string, remotePath string, executable bool) error {
 
 	permission := "C0644"
 	if executable {
 		permission = "C0755"
 	}
 
-	fileReader, _ := os.Open(srcFile)
+	fileReader, _ := os.Open(localFile)
 	defer fileReader.Close()
 
 	contentsBytes, _ := ioutil.ReadAll(fileReader)
@@ -145,16 +146,49 @@ func (c *Client) UploadFile(srcFile string, destPath string, executable bool) er
 
 	go func() {
 		w, _ := session.StdinPipe()
-		fmt.Fprintln(w, permission, size, path.Base(srcFile))
+		fmt.Fprintln(w, permission, size, path.Base(localFile))
 		io.Copy(w, r)
 		fmt.Fprint(w, "\x00")
 		w.Close()
 	}()
 
-	if err := session.Run("/usr/bin/scp -t " + destPath); err != nil {
+	if err := session.Run("/usr/bin/scp -t " + remotePath); err != nil {
 		fmt.Println(b.String())
 		log.Fatalf("write failed:%v", err.Error())
 	}
 
 	return nil
 }
+
+//UploadFile copies a file from a local to a remote machine
+func (c *Client) DownloadFile(remoteFile string, localPath string, useSudo bool) error {
+
+	filename := path.Base(remoteFile)
+ 	localFile := filepath.Join(localPath, filename)
+
+	fileReader, _ := os.Create(localFile)
+	defer fileReader.Close()
+
+	cmd := fmt.Sprintf("dd if=%s", remoteFile)
+	if useSudo {
+		cmd = fmt.Sprintf("sudo %s", cmd)
+	}
+
+	session := c.session()
+	defer session.Close()
+
+	var b bytes.Buffer
+	session.Stdout = &b
+
+	if err := session.Run(cmd); err != nil {
+		log.Fatal("Failed to run: " + err.Error())
+	}
+
+	_, err := fileReader.Write(b.Bytes())
+	if err != nil {
+		log.Fatalf("write failed:%v", err)
+	}
+
+	return nil
+}
+
