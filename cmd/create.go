@@ -30,8 +30,8 @@ func CreateCluster(cmd *cobra.Command, args []string) {
 	fmt.Println(core01.Name())
 	fmt.Println(core02.Name())
 
-	installKubernetes(core01)
-	//installKubernetes(core02)
+	token := installKubernetes(core01, "master", "")
+	installKubernetes(core02, "worker", token)
 
 	hc.ImageDelete(imageSpec)
 	//core01.Delete()
@@ -81,7 +81,7 @@ func createServer(name string, image *hetzner.ImageSpec) *hetzner.ServerInstance
 	return serverSpec.Create().PowerOn().WaitForRunning()
 }
 
-func installKubernetes(s *hetzner.ServerInstance){
+func installKubernetes(s *hetzner.ServerInstance, role string, tokenCmd string) string {
 
 	ipAddress := s.IPv4()
 	fmt.Println("Install Kubernetes on", ipAddress);
@@ -94,7 +94,13 @@ func installKubernetes(s *hetzner.ServerInstance){
 	dir := "./assets/kubernetes/"
 	client.UploadFile(dir+"kubeadm_install.sh", "/home/core", true)
 
-	output := client.RunCmd("chmod +x ./kubeadm_install.sh; sudo ./kubeadm_install.sh " + s.Name() + " master")
+	output := client.RunCmd("chmod +x ./kubeadm_install.sh; sudo ./kubeadm_install.sh " + s.Name() + " " + role)
 	fmt.Println(output)
 
+	if role == "master" {
+		return client.RunCmd("sudo kubeadm token create --print-join-command")
+	}else if 0 < len(tokenCmd) {
+		return client.RunCmd("sudo " + tokenCmd)
+	}
+	return ""
 }
