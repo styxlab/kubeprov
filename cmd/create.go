@@ -23,15 +23,17 @@ func CreateCluster(cmd *cobra.Command, args []string) {
 	hc := hetzner.Connect()
 	imageSpec := createImageForCoreOS(hc)
 
-	//create new CoreOS servers
+	//master
 	core01 := createServer("core01", imageSpec)
-	core02 := createServer("core02", imageSpec)
-
 	fmt.Println(core01.Name())
-	fmt.Println(core02.Name())
-
+	
 	joinCmd := ""
 	joinCmd = installKubernetes(core01, "master", joinCmd)
+	
+	//worker
+	core02 := createServer("core02", imageSpec)
+	fmt.Println(core02.Name())
+
 	result := installKubernetes(core02, "worker", joinCmd)
 	fmt.Println(result)
 
@@ -101,8 +103,6 @@ func installKubernetes(s *hetzner.ServerInstance, role string, joinCmd string) s
 
 	if role == "master" {
 		client.UploadFile(dir+"kubeadm_master.sh", "/home/core", true)
-		//output = client.RunCmd("chmod +x ./kubeadm_master.sh")
-		//fmt.Println(output)
 		output = client.RunCmd("./kubeadm_master.sh")
 		fmt.Println(output)
 		output = client.RunCmd("sudo kubeadm token create --print-join-command")
