@@ -101,7 +101,7 @@ func installKubernetes(s *hetzner.ServerInstance, role string, joinCmd string) s
 
 	if role == "master" {
 		client.UploadFile(dir+"kubeadm_master.sh", "/home/core", true)
-		output = client.RunCmd("chmod +x ./kubeadm_master.sh; sudo ./kubeadm_masher.sh")
+		output = client.RunCmd("chmod +x ./kubeadm_master.sh; ./kubeadm_master.sh")
 		fmt.Println(output)
 		return client.RunCmd("sudo kubeadm token create --print-join-command")
 	}else if 0 < len(joinCmd) {
