@@ -30,8 +30,10 @@ func CreateCluster(cmd *cobra.Command, args []string) {
 	fmt.Println(core01.Name())
 	fmt.Println(core02.Name())
 
-	token := installKubernetes(core01, "master", "")
-	installKubernetes(core02, "worker", token)
+	joinCmd := ""
+	joinCmd = installKubernetes(core01, "master", joinCmd)
+	result := installKubernetes(core02, "worker", joinCmd)
+	fmt.Println(result)
 
 	hc.ImageDelete(imageSpec)
 	//core01.Delete()
@@ -81,7 +83,7 @@ func createServer(name string, image *hetzner.ImageSpec) *hetzner.ServerInstance
 	return serverSpec.Create().PowerOn().WaitForRunning()
 }
 
-func installKubernetes(s *hetzner.ServerInstance, role string, tokenCmd string) string {
+func installKubernetes(s *hetzner.ServerInstance, role string, joinCmd string) string {
 
 	ipAddress := s.IPv4()
 	fmt.Println("Install Kubernetes on", ipAddress);
@@ -99,8 +101,8 @@ func installKubernetes(s *hetzner.ServerInstance, role string, tokenCmd string) 
 
 	if role == "master" {
 		return client.RunCmd("sudo kubeadm token create --print-join-command")
-	}else if 0 < len(tokenCmd) {
-		return client.RunCmd("sudo " + tokenCmd)
+	}else if 0 < len(joinCmd) {
+		return client.RunCmd("sudo " + joinCmd)
 	}
 	return ""
 }

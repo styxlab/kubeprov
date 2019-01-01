@@ -1,6 +1,8 @@
 HOSTNAME=$1
 ROLE=$2
 
+HOMEDIR=$(pwd)
+
 echo "Set hostname to $HOSTNAME as $ROLE"
 hostnamectl set-hostname $HOSTNAME
 
@@ -28,7 +30,7 @@ mkdir -p /opt/bin
 cd /opt/bin
 curl -L --remote-name-all https://storage.googleapis.com/kubernetes-release/release/${RELEASE}/bin/linux/amd64/{kubeadm,kubelet,kubectl}
 chmod +x {kubeadm,kubelet,kubectl}
-cd /home/core
+cd $HOMEDIR
 
 curl -sSL "https://raw.githubusercontent.com/kubernetes/kubernetes/${RELEASE}/build/debs/kubelet.service" | sed "s:/usr/bin:/opt/bin:g" > /etc/systemd/system/kubelet.service
 mkdir -p /etc/systemd/system/kubelet.service.d
@@ -39,9 +41,9 @@ systemctl enable kubelet && systemctl start kubelet
 if [ "$2" = "master" ]; then
 	echo "I'm the master"
 	/opt/bin/kubeadm init --apiserver-advertise-address=$IPV4  --pod-network-cidr=192.168.0.0/16 --ignore-preflight-errors=NumCPU
-	mkdir -p $HOME/.kube
-	cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
-	chown $(id -u):$(id -g) $HOME/.kube/config
+	mkdir -p $HOMEDIR/.kube
+	cp -i /etc/kubernetes/admin.conf $HOMEDIR/.kube/config
+	chown $(id -u):$(id -g) $HOMEDIR/.kube/config
 
 	kubectl apply -f https://docs.projectcalico.org/v3.3/getting-started/kubernetes/installation/hosted/rbac-kdd.yaml
 	kubectl apply -f https://docs.projectcalico.org/v3.3/getting-started/kubernetes/installation/hosted/kubernetes-datastore/calico-networking/1.7/calico.yaml
