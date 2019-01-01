@@ -7,6 +7,8 @@ import (
     "net"
 )
 
+//TODO: make prgress and error channel, then attach to progress bar
+
 // WaitForOpenPort scans and waits for open port until timeout
 func WaitForOpenPort(ip string, port int, interval time.Duration, timeout time.Duration) error {
 

@@ -25,9 +25,13 @@ func CreateCluster(cmd *cobra.Command, args []string) {
 
 	//create new CoreOS servers
 	core01 := createServer("core01", imageSpec)
-	//core02 := createServer("core02", imageSpec)
+	core02 := createServer("core02", imageSpec)
 
-	installMatchbox(core01)
+	fmt.Println(core01.Name())
+	fmt.Println(core02.Name())
+
+	installKubernetes(core01)
+	//installKubernetes(core02)
 
 	hc.ImageDelete(imageSpec)
 	//core01.Delete()
@@ -77,20 +81,20 @@ func createServer(name string, image *hetzner.ImageSpec) *hetzner.ServerInstance
 	return serverSpec.Create().PowerOn().WaitForRunning()
 }
 
-func installMatchbox(s *hetzner.ServerInstance){
+func installKubernetes(s *hetzner.ServerInstance){
 
 	ipAddress := s.IPv4()
-	fmt.Println("Install Matchbox on", ipAddress);
+	fmt.Println("Install Kubernetes on", ipAddress);
 
 	auth := ssh.AuthKey(s.PublicKeyName(), s.PrivateKeyFile())
 	config := auth.Config("core")
 	client := config.Client(ipAddress, 22)
 	defer client.Close()
 
-	dir := "./assets/coreos/"
-	client.UploadFile(dir+"matchbox.sh", "/home/core", true)
+	dir := "./assets/kubernetes/"
+	client.UploadFile(dir+"kubernetes_install.sh", "/home/core", true)
 
-	output := client.RunCmd("./matchbox.sh")
+	output := client.RunCmd("chmod +x ./kubernetes_install.sh; sudo ./kubernetes_install.sh " + s.Name())
 	fmt.Println(output)
 
 }
