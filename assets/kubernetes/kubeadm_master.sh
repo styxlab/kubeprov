@@ -12,7 +12,7 @@ sudo /opt/bin/kubeadm init --apiserver-advertise-address=$IPV4  --pod-network-ci
 echo $HOME
 mkdir -p $HOME/.kube
 sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
-chown $(id -u):$(id -g) $HOME/.kube/config
+sudo chown core:core $HOME/.kube/config
 
 #echo "Wait for 10 seconds..."
 #sleep 10
