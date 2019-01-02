@@ -1,3 +1,5 @@
+#!/usr/bin/env sh
+
 HOSTNAME=$1
 
 echo "Set hostname to $HOSTNAME as $ROLE"

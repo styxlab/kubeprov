@@ -8,56 +8,46 @@ import (
 	"github.com/styxlab/kubeprov/pkg/ssh"
 )
 
-func init() {
-	rootCmd.AddCommand(createCmd)
-}
-
-var createCmd = &cobra.Command{
-	Use:     "create",
-	Short:   "creates a new kubernetes cluster on hetzner cloud",
-	Run: CreateCluster,
-}
+var (
+	createCmd = &cobra.Command {
+		Use:     "create",
+		Short:   "creates a new kubernetes cluster on hetzner cloud",
+		Run: CreateCluster,
+	}
+)
 
 func CreateCluster(cmd *cobra.Command, args []string) {
 
-	hc := hetzner.Connect()
-	imageSpec := createImageForCoreOS(hc)
-
 	//master
-	core01 := createServer("core01", imageSpec)
+	core01 :=  installCoreOS("core01")
 	fmt.Println(core01.Name())
-	
+
 	joinCmd := ""
 	joinCmd = installKubernetes(core01, "master", joinCmd)
-	
-	//worker
-	core02 := createServer("core02", imageSpec)
+
+	core02 :=  installCoreOS("core02")
 	fmt.Println(core02.Name())
 
 	result := installKubernetes(core02, "worker", joinCmd)
 	fmt.Println(result)
 
-	hc.ImageDelete(imageSpec)
 	//core01.Delete()
 	//core02.Delete()
 }
 
-func createImageForCoreOS(hc *hetzner.Client) *hetzner.ImageSpec {
+func installCoreOS(name string) *hetzner.ServerInstance {
 
+	hc := hetzner.Connect()
 	imageSpec := hetzner.ImageByName("centos-7")
-	serverSpec := hc.ServerSpec("coreos-install", "cx11", imageSpec)
+	serverSpec := hc.ServerSpec(name, "cx11", imageSpec)
 	serverInst := serverSpec.Create().EnableRescue().PowerOn().WaitForRunning()
 
-	installCoreOS(serverInst)
+	installCoreOSonServer(serverInst)
 
-	// Create the image before reboot in order to preserver ignition.json
-	imageSpec = serverInst.CreateSnapshot("CoreOS")
-	serverInst.Delete()
-
-	return imageSpec
+	return serverInst.Reboot().WaitForRunning()
 }
 
-func installCoreOS(s *hetzner.ServerInstance) {
+func installCoreOSonServer(s *hetzner.ServerInstance) {
 
 	ipAddress := s.IPv4()
 	fmt.Println("Install CoreOS on", ipAddress);
@@ -76,13 +66,6 @@ func installCoreOS(s *hetzner.ServerInstance) {
 
 	output = client.RunCmd("./install.sh")
 	fmt.Println(output)
-}
-
-func createServer(name string, image *hetzner.ImageSpec) *hetzner.ServerInstance {
-	//TODO: concurrent server starting
-	hc := hetzner.Connect()
-	serverSpec := hc.ServerSpec(name, "cx11", image)
-	return serverSpec.Create().PowerOn().WaitForRunning()
 }
 
 func installKubernetes(s *hetzner.ServerInstance, role string, joinCmd string) string {
@@ -113,3 +96,52 @@ func installKubernetes(s *hetzner.ServerInstance, role string, joinCmd string) s
 	}
 	return ""
 }
+
+/*
+func createImageForCoreOS(hc *hetzner.Client) *hetzner.ImageSpec {
+
+	imageSpec := hetzner.ImageByName("centos-7")
+	serverSpec := hc.ServerSpec("coreos-install", "cx11", imageSpec)
+	serverInst := serverSpec.Create().EnableRescue().PowerOn().WaitForRunning()
+
+	installCoreOSonServer(serverInst)
+
+	// Create the image before reboot in order to preserver ignition.json
+	imageSpec = serverInst.CreateSnapshot("CoreOS")
+	serverInst.Delete()
+
+	return imageSpec
+}
+*/
+
+/*
+	//hc := hetzner.Connect()
+	//imageSpec := createImageForCoreOS(hc)
+
+	
+
+
+	//master
+	core01 := createServer("core01", imageSpec)
+	fmt.Println(core01.Name())
+	
+	joinCmd := ""
+	joinCmd = installKubernetes(core01, "master", joinCmd)
+	
+	//worker
+	core02 := createServer("core02", imageSpec)
+	fmt.Println(core02.Name())
+
+	result := installKubernetes(core02, "worker", joinCmd)
+	fmt.Println(result)
+
+	hc.ImageDelete(imageSpec)
+	*/
+/*
+	func createServer(name string, image *hetzner.ImageSpec) *hetzner.ServerInstance {
+	//TODO: concurrent server starting
+	hc := hetzner.Connect()
+	serverSpec := hc.ServerSpec(name, "cx11", image)
+	return serverSpec.Create().PowerOn().WaitForRunning()
+}
+*/

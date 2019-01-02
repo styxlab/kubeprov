@@ -2,28 +2,29 @@ package cmd
 
 import (
 	"fmt"
-	"os"
-	"log"
 
 	"github.com/spf13/cobra"
 )
 
-var rootCmd = &cobra.Command{
-	Use:   "kubeprov",
-	Short: "Kubernetes Cluster on Hetzner Cloud.",
-	Long:  "Command-line interface for creating a Kubernetes Clusters on Hetzner Cloud.",
-}
+var (
+	rootCmd = &cobra.Command{
+		Use:   "kubeprov",
+		Short: "Kubernetes Cluster on Hetzner Cloud.",
+		Long:  `Command-line interface for creating Kubernetes Clusters on Hetzner Cloud.`,
+	}
+)
 
 func init() {
 	rootCmd.PersistentFlags().BoolP("verbose", "v", false, "log level")
 
-	log.SetFlags(0)
-	log.SetPrefix("kubeprov: ")
+	//rootCmd.AddCommand(contextCmd)
+	rootCmd.AddCommand(clusterCmd)
+	rootCmd.AddCommand(versionCmd)
 }
 
 func Execute() {
-	if err := rootCmd.Execute(); err != nil {
+	err := rootCmd.Execute()
+	if err != nil && err.Error() != "" {
 		fmt.Println(err)
-		os.Exit(1)
 	}
 }
