@@ -18,39 +18,51 @@ var (
 
 func CreateCluster(cmd *cobra.Command, args []string) {
 
-	//master
-	core01 :=  installCoreOS("core01")
-	fmt.Println(core01.Name())
 
-	joinCmd := ""
-	joinCmd = installKubernetes(core01, "master", joinCmd)
+	core01 := startRescue("core01")
+	fmt.Println(core01.Name())	
 
-	core02 :=  installCoreOS("core02")
+	core02 := startRescue("core02")
 	fmt.Println(core02.Name())
 
-	result := installKubernetes(core02, "worker", joinCmd)
-	fmt.Println(result)
+	finish01 := make(chan string)
+	go func() {
+		installCoreOS(core01)
+		startKubernetes(core01, core01, "master")
+		finish01 <- "done 01"
+	}()
+	msg01 := <-finish01
+	fmt.Println(msg01)
+	
+	finish02 := make(chan string)
+	go func() {
+		installCoreOS(core02)
+		startKubernetes(core02, core01, "worker")
+		finish02 <- "done 02"
+	}()
+	msg02 := <-finish02
+	fmt.Println(msg02)
 
 	//core01.Delete()
 	//core02.Delete()
 }
 
-func installCoreOS(name string) *hetzner.ServerInstance {
+func startRescue(name string) *hetzner.ServerInstance {
 
 	hc := hetzner.Connect()
 	imageSpec := hetzner.ImageByName("centos-7")
 	serverSpec := hc.ServerSpec(name, "cx11", imageSpec)
-	serverInst := serverSpec.Create().EnableRescue().PowerOn().WaitForRunning()
+	serverInst := serverSpec.Create().EnableRescue().PowerOn()
 
-	installCoreOSonServer(serverInst)
-
-	return serverInst.Reboot().WaitForRunning()
+	return serverInst
 }
 
-func installCoreOSonServer(s *hetzner.ServerInstance) {
+func installCoreOS(s *hetzner.ServerInstance) {
 
 	ipAddress := s.IPv4()
 	fmt.Println("Install CoreOS on", ipAddress);
+
+	s.WaitForRunning()
 
 	auth := ssh.AuthKey(s.PublicKeyName(), s.PrivateKeyFile())
 	config := auth.Config("root")
@@ -64,37 +76,51 @@ func installCoreOSonServer(s *hetzner.ServerInstance) {
 	client.UploadFile(dir+"ignition.json", "/root", false)
 	client.UploadFile(dir+"install.sh", "/root", true)
 
+	dir = "./assets/kubernetes/"
+	client.UploadFile(dir+"kubeadm_preinst.sh", "/root", true)
+
 	output = client.RunCmd("./install.sh")
 	fmt.Println(output)
+
+	output = client.RunCmd("./kubeadm_preinst.sh")
+	fmt.Println(output)
+
+	s.Reboot()
 }
 
-func installKubernetes(s *hetzner.ServerInstance, role string, joinCmd string) string {
+func startKubernetes(s *hetzner.ServerInstance, m *hetzner.ServerInstance, role string) {
 
-	ipAddress := s.IPv4()
-	fmt.Println("Install Kubernetes on", ipAddress);
+	fmt.Println("Install Kubernetes on", s.IPv4());
 
-	auth := ssh.AuthKey(s.PublicKeyName(), s.PrivateKeyFile())
-	config := auth.Config("core")
-	client := config.Client(ipAddress, 22)
+	client := openClient(s)
 	defer client.Close()
 
 	dir := "./assets/kubernetes/"
-	client.UploadFile(dir+"kubeadm_install.sh", "/home/core", true)
+	client.UploadFile(dir+"hostname.sh", "/home/core", true)
 
-	output := client.RunCmd("sudo ./kubeadm_install.sh " + s.Name())
+	output := client.RunCmd("sudo ./hostname.sh " + s.Name())
 	fmt.Println(output)
 
 	if role == "master" {
 		client.UploadFile(dir+"kubeadm_master.sh", "/home/core", true)
 		output = client.RunCmd("./kubeadm_master.sh")
 		fmt.Println(output)
-		output = client.RunCmd("sudo kubeadm token create --print-join-command")
-		fmt.Println(output)
-		return output
-	}else if 0 < len(joinCmd) {
-		return client.RunCmd("sudo " + joinCmd)
+	}else {
+		master := openClient(m)
+		defer master.Close()
+		joinCmd := master.RunCmd("sudo kubeadm token create --print-join-command")
+		fmt.Println(joinCmd)
+		client.RunCmd("sudo " + joinCmd)
 	}
-	return ""
+}
+
+func openClient(s *hetzner.ServerInstance) *ssh.Client {
+
+	s.WaitForRunning()
+	
+	auth := ssh.AuthKey(s.PublicKeyName(), s.PrivateKeyFile())
+	config := auth.Config("core")
+	return config.Client(s.IPv4(), 22)
 }
 
 /*
@@ -104,7 +130,7 @@ func createImageForCoreOS(hc *hetzner.Client) *hetzner.ImageSpec {
 	serverSpec := hc.ServerSpec("coreos-install", "cx11", imageSpec)
 	serverInst := serverSpec.Create().EnableRescue().PowerOn().WaitForRunning()
 
-	installCoreOSonServer(serverInst)
+	installCoreOS(serverInst)
 
 	// Create the image before reboot in order to preserver ignition.json
 	imageSpec = serverInst.CreateSnapshot("CoreOS")
