@@ -19,29 +19,50 @@ var (
 func CreateCluster(cmd *cobra.Command, args []string) {
 
 
-	core01 := startRescue("core01")
-	fmt.Println(core01.Name())	
+	r1 := make(chan *hetzner.ServerInstance)
+	go func() {
+		core01 := startRescue("core01")
+		fmt.Println(core01.Name())
+		r1 <- core01
+	}()
 
-	core02 := startRescue("core02")
-	fmt.Println(core02.Name())
+	r2 := make(chan *hetzner.ServerInstance)
+	go func() {
+		core02 := startRescue("core02")
+		fmt.Println(core02.Name())
+		r2 <- core02
+	}()
 
-	finish01 := make(chan string)
+	core01 := <- r1
+	fmt.Println("received core01")
+
+	c1 := make(chan string)
 	go func() {
 		installCoreOS(core01)
 		startKubernetes(core01, core01, "master")
-		finish01 <- "done 01"
+		c1 <- "done 01"
 	}()
-	msg01 := <-finish01
-	fmt.Println(msg01)
-	
-	finish02 := make(chan string)
+
+	core02 := <- r2
+	fmt.Println("received core02")
+
+	c2 := make(chan string)
 	go func() {
 		installCoreOS(core02)
-		startKubernetes(core02, core01, "worker")
-		finish02 <- "done 02"
+		c2 <- "done 02"
 	}()
-	msg02 := <-finish02
-	fmt.Println(msg02)
+
+   for i := 0; i < 2; i++ {
+        select {
+        case msg1 := <-c1:
+            fmt.Println("received", msg1)
+        case msg2 := <-c2:
+            fmt.Println("received", msg2)
+        }
+    }
+
+    fmt.Println("join node")
+    startKubernetes(core02, core01, "worker")
 
 	//core01.Delete()
 	//core02.Delete()
