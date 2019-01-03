@@ -129,6 +129,10 @@ func startKubernetes(s *hetzner.ServerInstance, m *hetzner.ServerInstance, role 
 	}else {
 		master := openClient(m)
 		defer master.Close()
+
+		cmd := "until $(ncat -z " + m.IPv4() + " 6443); do echo 'Waiting for API server to respond'; sleep 5; done"
+		output = master.RunCmd(cmd)
+		fmt.Println(output)
 		joinCmd := master.RunCmd("sudo kubeadm token create --print-join-command")
 		fmt.Println(joinCmd)
 		client.RunCmd("sudo " + joinCmd)

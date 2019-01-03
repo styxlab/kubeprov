@@ -14,11 +14,15 @@ mkdir -p $HOME/.kube
 sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
 sudo chown core:core $HOME/.kube/config
 
-#echo "Wait for 10 seconds..."
-#sleep 10
+until $(ncat -z ${IPV4} 6443); do
+  echo "Waiting for API server to respond"
+  sleep 5
+done
 
 echo "kubectl"
+sleep 5
 kubectl apply -f https://docs.projectcalico.org/v3.3/getting-started/kubernetes/installation/hosted/rbac-kdd.yaml
+sleep 5
 kubectl apply -f https://docs.projectcalico.org/v3.3/getting-started/kubernetes/installation/hosted/kubernetes-datastore/calico-networking/1.7/calico.yaml
 
 echo "Finished"
