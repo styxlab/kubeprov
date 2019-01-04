@@ -19,10 +19,11 @@ until $(ncat -z ${IPV4} 6443); do
   sleep 5
 done
 
-echo "kubectl"
-sleep 5
-kubectl apply -f https://docs.projectcalico.org/v3.3/getting-started/kubernetes/installation/hosted/rbac-kdd.yaml
-sleep 5
-kubectl apply -f https://docs.projectcalico.org/v3.3/getting-started/kubernetes/installation/hosted/kubernetes-datastore/calico-networking/1.7/calico.yaml
+echo "kubectl1"
+/opt/bin/kubectl get nodes
+
+echo "kubectl2"
+/opt/bin/kubectl apply -f https://docs.projectcalico.org/v3.3/getting-started/kubernetes/installation/hosted/rbac-kdd.yaml
+/opt/bin/kubectl apply -f https://docs.projectcalico.org/v3.3/getting-started/kubernetes/installation/hosted/kubernetes-datastore/calico-networking/1.7/calico.yaml
 
 echo "Finished"

@@ -18,6 +18,7 @@ var (
 
 func CreateCluster(cmd *cobra.Command, args []string) {
 
+	//https://gobyexample.com/worker-pools
 
 	r1 := make(chan *hetzner.ServerInstance)
 	go func() {
@@ -61,7 +62,11 @@ func CreateCluster(cmd *cobra.Command, args []string) {
         }
     }
 
+    var input string
+    fmt.Scanln(&input)
+
     fmt.Println("join node")
+
     startKubernetes(core02, core01, "worker")
 
 	//core01.Delete()
