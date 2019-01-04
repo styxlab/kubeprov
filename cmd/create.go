@@ -62,11 +62,7 @@ func CreateCluster(cmd *cobra.Command, args []string) {
         }
     }
 
-    var input string
-    fmt.Scanln(&input)
-
     fmt.Println("join node")
-
     startKubernetes(core02, core01, "worker")
 
 	//core01.Delete()
