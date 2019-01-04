@@ -11,6 +11,8 @@ import (
 // ImageSpec hold an (incomplete) image specification
 type ImageSpec struct {
 	spec *hcloud.Image
+	action *hcloud.Action
+	lastop string
 }
 
 func ImageByName(name string) *ImageSpec {

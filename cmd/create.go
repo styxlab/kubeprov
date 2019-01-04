@@ -18,6 +18,10 @@ var (
 
 func CreateCluster(cmd *cobra.Command, args []string) {
 
+
+
+
+
 	//https://gobyexample.com/worker-pools
 
 	r1 := make(chan *hetzner.ServerInstance)
@@ -81,14 +85,9 @@ func startRescue(name string) *hetzner.ServerInstance {
 
 func installCoreOS(s *hetzner.ServerInstance) {
 
-	ipAddress := s.IPv4()
-	fmt.Println("Install CoreOS on", ipAddress);
+	fmt.Println("Install CoreOS on", s.IPv4());
 
-	s.WaitForRunning()
-
-	auth := ssh.AuthKey(s.PublicKeyName(), s.PrivateKeyFile())
-	config := auth.Config("root")
-	client := config.Client(ipAddress, 22)
+	client := openClient("root", s)
 	defer client.Close()
 
 	output := client.RunCmd("uname -a")
@@ -114,7 +113,7 @@ func startKubernetes(s *hetzner.ServerInstance, m *hetzner.ServerInstance, role 
 
 	fmt.Println("Install Kubernetes on", s.IPv4());
 
-	client := openClient(s)
+	client := openClient("core", s)
 	defer client.Close()
 
 	dir := "./assets/kubernetes/"
@@ -128,7 +127,7 @@ func startKubernetes(s *hetzner.ServerInstance, m *hetzner.ServerInstance, role 
 		output = client.RunCmd("./kubeadm_master.sh")
 		fmt.Println(output)
 	}else {
-		master := openClient(m)
+		master := openClient("core", m)
 		defer master.Close()
 
 		cmd := "until $(ncat -z " + m.IPv4() + " 6443); do echo 'Waiting for API server to respond'; sleep 5; done"
@@ -140,60 +139,11 @@ func startKubernetes(s *hetzner.ServerInstance, m *hetzner.ServerInstance, role 
 	}
 }
 
-func openClient(s *hetzner.ServerInstance) *ssh.Client {
+func openClient(name string, s *hetzner.ServerInstance) *ssh.Client {
 
 	s.WaitForRunning()
 	
 	auth := ssh.AuthKey(s.PublicKeyName(), s.PrivateKeyFile())
-	config := auth.Config("core")
+	config := auth.Config(name)
 	return config.Client(s.IPv4(), 22)
 }
-
-/*
-func createImageForCoreOS(hc *hetzner.Client) *hetzner.ImageSpec {
-
-	imageSpec := hetzner.ImageByName("centos-7")
-	serverSpec := hc.ServerSpec("coreos-install", "cx11", imageSpec)
-	serverInst := serverSpec.Create().EnableRescue().PowerOn().WaitForRunning()
-
-	installCoreOS(serverInst)
-
-	// Create the image before reboot in order to preserver ignition.json
-	imageSpec = serverInst.CreateSnapshot("CoreOS")
-	serverInst.Delete()
-
-	return imageSpec
-}
-*/
-
-/*
-	//hc := hetzner.Connect()
-	//imageSpec := createImageForCoreOS(hc)
-
-	
-
-
-	//master
-	core01 := createServer("core01", imageSpec)
-	fmt.Println(core01.Name())
-	
-	joinCmd := ""
-	joinCmd = installKubernetes(core01, "master", joinCmd)
-	
-	//worker
-	core02 := createServer("core02", imageSpec)
-	fmt.Println(core02.Name())
-
-	result := installKubernetes(core02, "worker", joinCmd)
-	fmt.Println(result)
-
-	hc.ImageDelete(imageSpec)
-	*/
-/*
-	func createServer(name string, image *hetzner.ImageSpec) *hetzner.ServerInstance {
-	//TODO: concurrent server starting
-	hc := hetzner.Connect()
-	serverSpec := hc.ServerSpec(name, "cx11", image)
-	return serverSpec.Create().PowerOn().WaitForRunning()
-}
-*/

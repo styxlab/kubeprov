@@ -2,7 +2,6 @@ package hetzner
 
 import (
 	"context"
-    "fmt"
     "time"
     "log"
 
@@ -20,6 +19,8 @@ type ServerInstance struct {
 	context context.Context
 	spec *ServerSpec
 	server *hcloud.Server
+	action *hcloud.Action
+	lastop string
 }
 
 // ServerSpec creates a cloud server specification
@@ -72,13 +73,12 @@ func (s *ServerSpec) Create() *ServerInstance {
 	if err != nil {
 		log.Fatal(err)
 	}
-	if err := s.cc.waitForAction(result.Action); err != nil {
-		log.Fatal("could not create server")
-    }
     return &ServerInstance {
     	context: s.cc.context,
     	spec: s,
     	server: result.Server,
+    	action: result.Action,
+    	lastop: "created",
     }
 }
 
@@ -91,8 +91,7 @@ func (s *ServerInstance) Delete() *ServerInstance {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-    fmt.Printf("Server %d deleted\n", server.ID)
+	s.lastop = "deleted"
     return s
 }
 
@@ -113,6 +112,7 @@ func (s *ServerSpec) Status() *ServerInstance {
  		context: s.cc.context,
     	spec: s,
     	server: result,
+    	lastop: "status",
     }
 }
 
@@ -154,10 +154,8 @@ func (s *ServerInstance) EnableRescue() *ServerInstance {
     if err != nil {
 		log.Fatal(err)
 	}
-    if err := c.waitForAction(rescue.Action); err != nil {
-		log.Fatal("could not enable rescue")
-    }
-
+	s.action = rescue.Action
+	s.lastop = "rescueEnabled"
     s.server.RescueEnabled = true
     return s
 }
@@ -195,13 +193,8 @@ func (s *ServerInstance) PowerOn() *ServerInstance {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	if err := c.waitForAction(action); err != nil {
-		log.Fatal("could not power on the server")
-    }
-
-    fmt.Printf("Server %d started\n", server.ID)
-
+	s.action = action
+	s.lastop = "powerOn"
 	return s
 }
 
@@ -209,7 +202,6 @@ func (s *ServerInstance) PowerOn() *ServerInstance {
 func (s *ServerInstance) Reboot() *ServerInstance {
 
 	c := s.spec.cc
-	//server := s.server
 
 	server, _, err := c.client.Server.GetByName(s.context, s.server.Name)
 		if err != nil {
@@ -223,13 +215,8 @@ func (s *ServerInstance) Reboot() *ServerInstance {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	if err := c.waitForAction(action); err != nil {
-		log.Fatal("could not reboot server")
-    }
-
-    fmt.Printf("Server %d rebooted\n", server.ID)
-
+	s.action = action
+	s.lastop = "rebooted"
  	return s
 }
 
@@ -248,13 +235,9 @@ func (s *ServerInstance) CreateSnapshot(description string) *ImageSpec {
 		log.Fatal(err)
 	}
 
-	if err := c.waitForAction(result.Action); err != nil {
-		log.Fatal("could not create server image")
-    }
-
-    fmt.Printf("Server image created.\n")
-
 	return &ImageSpec {
 		spec: result.Image,
+		action: result.Action,
+		lastop: "created",
 	}
 }
