@@ -18,10 +18,6 @@ var (
 
 func CreateCluster(cmd *cobra.Command, args []string) {
 
-
-
-
-
 	//https://gobyexample.com/worker-pools
 
 	r1 := make(chan *hetzner.ServerInstance)

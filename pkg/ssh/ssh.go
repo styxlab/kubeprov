@@ -114,10 +114,12 @@ func (c *Client) RunCmd(cmd string) string {
 	defer session.Close()
 
 	var b bytes.Buffer
+	var e bytes.Buffer
 	session.Stdout = &b
+	session.Stderr = &e
 
 	if err := session.Run(cmd); err != nil {
-		log.Fatal("Failed to run: " + err.Error())
+		log.Fatalf("Failed to run command:%s\nstdout:%s\nstderr:%v ", cmd, b.String(), err)
 	}
 	return b.String()
 }
