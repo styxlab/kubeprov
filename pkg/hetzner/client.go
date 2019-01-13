@@ -3,6 +3,7 @@ package hetzner
 import (
 	"context"
     "os"
+    "log"
 
     "github.com/hetznercloud/hcloud-go/hcloud"
  	"github.com/go-kit/kit/log/term"
@@ -59,4 +60,38 @@ func (c *Client) waitForAction(action *hcloud.Action) error {
 		}
 	}
 	return <-errCh
+}
+
+func (s *ServerInstance) WaitForAction() *ServerInstance  {
+
+	client := s.spec.cc.client
+	action := s.action
+
+	progressCh, errCh := client.Action.WatchProgress(s.context, action)
+
+	if term.IsTerminal(os.Stdout) {
+		progress := uiprogress.New()
+
+		progress.Start()
+		bar := progress.AddBar(100).AppendCompleted().PrependElapsed()
+		w, _ := terminaldimensions.Width()
+		bar.Width = int(w)-20
+		bar.Empty = ' '
+
+		for {
+			select {
+			case err := <-errCh:
+				if err == nil {
+					bar.Set(100)
+				}else{
+					log.Fatal(err)
+				}
+				progress.Stop()
+				return s
+			case p := <-progressCh:
+				bar.Set(p)
+			}
+		}
+	}
+	return s
 }

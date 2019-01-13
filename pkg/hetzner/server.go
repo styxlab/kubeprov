@@ -241,3 +241,5 @@ func (s *ServerInstance) CreateSnapshot(description string) *ImageSpec {
 		lastop: "created",
 	}
 }
+
+

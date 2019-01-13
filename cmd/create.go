@@ -6,6 +6,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/styxlab/kubeprov/pkg/hetzner"
 	"github.com/styxlab/kubeprov/pkg/ssh"
+	"github.com/styxlab/kubeprov/pkg/logging"
 )
 
 var (
@@ -14,23 +15,28 @@ var (
 		Short:   "creates a new kubernetes cluster on hetzner cloud",
 		Run: CreateCluster,
 	}
+
+	logServer *logging.LogServer
 )
 
 func CreateCluster(cmd *cobra.Command, args []string) {
 
 	//https://gobyexample.com/worker-pools
 
+	logServer := logging.StartLogServer(9090)
+	logServer.SendLogMessage("Create a cluster...")
+
 	r1 := make(chan *hetzner.ServerInstance)
 	go func() {
 		core01 := startRescue("core01")
-		fmt.Println(core01.Name())
+		logServer.SendLogMessage(core01.Name())
 		r1 <- core01
 	}()
 
 	r2 := make(chan *hetzner.ServerInstance)
 	go func() {
 		core02 := startRescue("core02")
-		fmt.Println(core02.Name())
+		logServer.SendLogMessage(core02.Name())
 		r2 <- core02
 	}()
 
@@ -65,8 +71,8 @@ func CreateCluster(cmd *cobra.Command, args []string) {
     fmt.Println("join node")
     startKubernetes(core02, core01, "worker")
 
-	//core01.Delete()
-	//core02.Delete()
+	core01.Delete()
+	core02.Delete()
 }
 
 func startRescue(name string) *hetzner.ServerInstance {
@@ -74,7 +80,7 @@ func startRescue(name string) *hetzner.ServerInstance {
 	hc := hetzner.Connect()
 	imageSpec := hetzner.ImageByName("centos-7")
 	serverSpec := hc.ServerSpec(name, "cx11", imageSpec)
-	serverInst := serverSpec.Create().EnableRescue().PowerOn()
+	serverInst := serverSpec.Create().WaitForAction().EnableRescue().PowerOn()
 
 	return serverInst
 }
