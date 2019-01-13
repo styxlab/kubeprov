@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net"
 	"io"
+	"strconv"
 
 	"github.com/spf13/cobra"
 )
@@ -12,30 +13,43 @@ var (
 	loggingCmd = &cobra.Command	{
 		Use:     "logs",
 		Aliases: []string{"l"},
-		Short:   "connects to the log server and prints log messages",
+		Short:   "prints detailed log messages from kubeprov cluster commands",
 		Run: printLogMessages,
 	}
+
+	portFlag string
 )
+
+func init() {
+	loggingCmd.Flags().StringVarP(&portFlag, "port", "p", "9090", "Port for logging")
+}
 
 func printLogMessages(cmd *cobra.Command, args []string) {
 	
-	connectLoop(true)
+	port, err := strconv.Atoi(portFlag)
+	if err != nil {
+		fmt.Println("Port number must be an integer.")
+		return
+	}
+
+	connectLoop(port, true)
 }
 
-func connectLoop(firstrun bool){
+func connectLoop(port int, firstrun bool){
+
+	endpoint := fmt.Sprintf("127.0.0.1:%d", port)
 
 	if firstrun {
-		fmt.Print("Waiting for Connection... ")
+		fmt.Printf("Waiting for connection on endpoint %s ... ", endpoint)
 	}
 
-	conn, err := net.Dial("tcp", "127.0.0.1:9090")
+	conn, err := net.Dial("tcp", endpoint)
 	for err != nil {
-		conn, err = net.Dial("tcp", "127.0.0.1:9090")
+		conn, err = net.Dial("tcp", endpoint)
 	}
 
 	if firstrun {
-		fmt.Print("connected.")
-		fmt.Println(" Press Ctrl+C to stop.")
+		fmt.Println("connected. Press Ctrl+C to stop.")
 	}
 
 	notify := make(chan error)
@@ -61,6 +75,5 @@ func connectLoop(firstrun bool){
 		break
 	}
 
-	connectLoop(false)
-
+	connectLoop(port, false)
 }
